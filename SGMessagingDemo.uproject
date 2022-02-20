@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{9AD31EAA-41E5-84DF-B887-FE872C3C2485}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "SGMessagingDemo",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

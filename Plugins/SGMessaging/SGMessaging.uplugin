@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "SGMessaging",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "crazytuzi",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+		  "Name": "SGMessaging",
+		  "Type": "Runtime",
+		  "LoadingPhase": "PreDefault"
+		}
+    ]
+}

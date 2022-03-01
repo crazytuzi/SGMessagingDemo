@@ -24,8 +24,9 @@ void AMessageBusRequest::BeginPlay()
 
 	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
 
-	MessageEndpoint = FSGMessageEndpoint::Builder("Request-Reply", MessageBus.ToSharedRef()).Handling<FTestReplyMessage>(
-		this, &AMessageBusRequest::OnReply);
+	MessageEndpoint = FSGMessageEndpoint::Builder("Request-Reply", MessageBus.ToSharedRef());
+
+	MessageEndpoint->Subscribe(TopicB, TopicB_MessageID2, this, &AMessageBusRequest::OnReply);
 }
 
 // Called every frame
@@ -40,14 +41,14 @@ void AMessageBusRequest::Tick(float DeltaTime)
 		Recipients.Add(Iterator->MessageEndpoint->GetAddress());
 	}
 
-	MessageEndpoint->Send<FTestRequestMessage>(new FTestRequestMessage("Request"), Recipients);
+	MessageEndpoint->Send(TopicB, TopicB_MessageID1, Recipients, "Val", FString("Request-Reply"));
 }
 
-void AMessageBusRequest::OnReply(const FTestReplyMessage& Message,
+void AMessageBusRequest::OnReply(const FSGMessage& Message,
                                  const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context)
 {
 	UE_LOG(LogTemp, Log, TEXT("AMessageBusRequest::OnReply IsDedicatedServer:%s Name:%s => %s"),
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
-	       *Message.Val);
+	       *Message.Get<FString>("Val"));
 }
 

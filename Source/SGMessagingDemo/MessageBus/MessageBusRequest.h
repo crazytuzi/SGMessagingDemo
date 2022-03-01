@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Interface/ISGMessageBus.h"
 #include "Common/SGMessageEndpoint.h"
-#include "MessageBusType.h"
 #include "MessageBusRequest.generated.h"
 
 UCLASS()
@@ -27,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	void OnReply(const FTestReplyMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
+	void OnReply(const FSGMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
 public:
 	/** Holds a pointer to the message bus. */

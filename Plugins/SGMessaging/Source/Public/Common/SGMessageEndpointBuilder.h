@@ -5,10 +5,8 @@
 #include "CoreMinimal.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Interface/ISGMessageBus.h"
-#include "Interface/ISGMessageHandler.h"
 #include "Interface/ISGMessagingModule.h"
 #include "SGMessageEndpoint.h"
-#include "SGMessageHandlers.h"
 
 
 /**
@@ -49,51 +47,6 @@ public:
 	{ }
 
 public:
-
-	/**
-	 * Adds a message handler for the given type of messages (via raw function pointers).
-	 *
-	 * It is legal to configure multiple handlers for the same message type. Each
-	 * handler will be executed when a message of the specified type is received.
-	 *
-	 * This overload is used to register raw class member functions.
-	 *
-	 * @param HandlerType The type of the object handling the messages.
-	 * @param MessageType The type of messages to handle.
-	 * @param Handler The class handling the messages.
-	 * @param HandlerFunc The class function handling the messages.
-	 * @return This instance (for method chaining).
-	 * @see WithCatchall, WithHandler
-	 */
-	template<typename MessageType, typename HandlerType>
-	FSGMessageEndpointBuilder& Handling(HandlerType* Handler, typename TRawSGMessageHandler<MessageType, HandlerType>::FuncType HandlerFunc)
-	{
-		Handlers.Add(MakeShareable(new TRawSGMessageHandler<MessageType, HandlerType>(Handler, MoveTemp(HandlerFunc))));
-
-		return *this;
-	}
-
-	/**
-	 * Adds a message handler for the given type of messages (via TFunction object).
-	 *
-	 * It is legal to configure multiple handlers for the same message type. Each
-	 * handler will be executed when a message of the specified type is received.
-	 *
-	 * This overload is used to register functions that are compatible with TFunction
-	 * function objects, such as global and static functions, as well as lambdas.
-	 *
-	 * @param MessageType The type of messages to handle.
-	 * @param Function The function object handling the messages.
-	 * @return This instance (for method chaining).
-	 * @see WithCatchall, WithHandler
-	 */
-	template<typename MessageType>
-	FSGMessageEndpointBuilder& Handling(typename TFunctionSGMessageHandler<MessageType>::FuncType HandlerFunc)
-	{
-		Handlers.Add(MakeShareable(new TFunctionSGMessageHandler<MessageType>(MoveTemp(HandlerFunc))));
-
-		return *this;
-	}
 
 	FSGMessageEndpointBuilder& NotificationHandling(FOnBusNotification&& InHandler)
 	{
@@ -155,67 +108,6 @@ public:
 	}
 
 	/**
-	 * Adds a message handler for the given type of messages (via raw function pointers).
-	 *
-	 * It is legal to configure multiple handlers for the same message type. Each
-	 * handler will be executed when a message of the specified type is received.
-	 *
-	 * This overload is used to register raw class member functions.
-	 *
-	 * @param HandlerType The type of the object handling the messages.
-	 * @param MessageType The type of messages to handle.
-	 * @param Handler The class handling the messages.
-	 * @param HandlerFunc The class function handling the messages.
-	 * @return This instance (for method chaining).
-	 * @see WithHandler
-	 */
-	template<typename HandlerType>
-	FSGMessageEndpointBuilder& WithCatchall(HandlerType* Handler, typename TRawSGMessageCatchall<HandlerType>::FuncType HandlerFunc)
-	{
-		Handlers.Add(MakeShareable(new TRawSGMessageCatchall<HandlerType>(Handler, MoveTemp(HandlerFunc))));
-
-		return *this;
-	}
-
-	/**
-	 * Adds a message handler for the given type of messages (via TFunction object).
-	 *
-	 * It is legal to configure multiple handlers for the same message type. Each
-	 * handler will be executed when a message of the specified type is received.
-	 *
-	 * This overload is used to register functions that are compatible with TFunction
-	 * function objects, such as global and static functions, as well as lambdas.
-	 *
-	 * @param MessageType The type of messages to handle.
-	 * @param Function The function object handling the messages.
-	 * @return This instance (for method chaining).
-	 * @see WithHandler
-	 */
-	FSGMessageEndpointBuilder& WithCatchall(FFunctionSGMessageCatchall::FuncType HandlerFunc)
-	{
-		Handlers.Add(MakeShareable(new FFunctionSGMessageCatchall(MoveTemp(HandlerFunc))));
-
-		return *this;
-	}
-
-	/**
-	 * Registers a message handler with the endpoint.
-	 *
-	 * It is legal to configure multiple handlers for the same message type. Each
-	 * handler will be executed when a message of the specified type is received.
-	 *
-	 * @param Handler The handler to add.
-	 * @return This instance (for method chaining).
-	 * @see Handling, WithCatchall
-	 */
-	FSGMessageEndpointBuilder& WithHandler(const TSharedRef<ISGMessageHandler, ESPMode::ThreadSafe>& Handler)
-	{
-		Handlers.Add(Handler);
-
-		return *this;
-	}
-
-	/**
 	 * Enables the endpoint's message inbox.
 	 *
 	 * The inbox is disabled by default.
@@ -243,7 +135,7 @@ public:
 		
 		if (Bus.IsValid())
 		{
-			Endpoint = MakeShared<FSGMessageEndpoint, ESPMode::ThreadSafe>(Name, Bus.ToSharedRef(), Handlers, OnNotification);
+			Endpoint = MakeShared<FSGMessageEndpoint, ESPMode::ThreadSafe>(Name, Bus.ToSharedRef(), OnNotification);
 			Bus->Register(Endpoint->GetAddress(), Endpoint.ToSharedRef());
 
 			if (OnNotification.IsBound())
@@ -290,9 +182,6 @@ private:
 
 	/** Holds a delegate to invoke on disconnection event. */
 	FOnBusNotification OnNotification;
-
-	/** Holds the collection of message handlers to register. */
-	TArray<TSharedPtr<ISGMessageHandler, ESPMode::ThreadSafe>> Handlers;
 
 	/** Holds a flag indicating whether the inbox should be enabled. */
 	bool InboxEnabled;

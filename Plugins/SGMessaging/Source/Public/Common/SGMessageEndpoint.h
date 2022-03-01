@@ -14,6 +14,10 @@
 #include "Interface/ISGMessageReceiver.h"
 #include "Interface/ISGMessageSender.h"
 #include "Interface/ISGMessageBusListener.h"
+#include "SGMessageHandlers.h"
+#include "Message/SGMessage.h"
+#include "Message/SGMessageBuilder.h"
+#include "Message/SGMessageTagBuilder.h"
 #include "Misc/Guid.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/NameTypes.h"
@@ -87,11 +91,10 @@ public:
 	 * @param InBus The message bus to attach this endpoint to.
 	 * @param InHandlers The collection of message handlers to register.
 	 */
-	FSGMessageEndpoint(const FName& InName, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& InBus, const TArray<TSharedPtr<ISGMessageHandler, ESPMode::ThreadSafe>>& InHandlers, const FOnBusNotification InNotificationDelegate)
+	FSGMessageEndpoint(const FName& InName, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& InBus, const FOnBusNotification InNotificationDelegate)
 		: Address(FSGMessageAddress::NewAddress())
 		, BusPtr(InBus)
 		, Enabled(true)
-		, Handlers(InHandlers)
 		, NotificationDelegate(InNotificationDelegate)
 		, Id(FGuid::NewGuid())
 		, InboxEnabled(false)
@@ -679,6 +682,26 @@ public:
 		Publish(Message, MessageType::StaticStruct(), Annotations, Scope, Delay, Expiration);
 	}
 
+	template <typename MessageType>
+	void Publish(const FName& MessageTag, MessageType* Message)
+	{
+		const auto Bus = GetBusIfEnabled();
+
+		if (Bus.IsValid())
+		{
+			Bus->Publish(MessageTag, Message, ESGMessageScope::Network, TMap<FName, FString>(), FTimespan::Zero(),
+			             FDateTime::MaxValue(), AsShared());
+		}
+	}
+
+	template <typename ...Args>
+	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, Args&&... Params)
+	{
+		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
+
+		Publish(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message);
+	}
+
 	/**
 	 * Immediately sends a message to the specified recipient.
 	 *
@@ -877,6 +900,38 @@ public:
 		Send(Message, MessageType::StaticStruct(), Flags, Annotations, Attachment, Recipients, Delay, Expiration);
 	}
 
+	template <typename MessageType>
+	void Send(const FName& MessageTag, MessageType* Message, const TArray<FSGMessageAddress>& Recipients)
+	{
+		const auto Bus = GetBusIfEnabled();
+
+		if (Bus.IsValid())
+		{
+			Bus->Send(MessageTag, Message, ESGMessageFlags::None, TMap<FName, FString>(), nullptr, Recipients,
+			          FTimespan::Zero(), FDateTime::MaxValue(), AsShared());
+		}
+	}
+
+	template <typename MessageType>
+	void Send(const FName& MessageTag, MessageType* Message, const FSGMessageAddress& Recipient)
+	{
+		Send(MessageTag, Message, TArrayBuilder<FSGMessageAddress>().Add(Recipient));
+	}
+
+	template <typename ...Args>
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& Recipients, Args&&... Params)
+	{
+		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
+
+		Send(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message, Recipients);
+	}
+
+	template <typename ...Args>
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& Recipient, Args&&... Params)
+	{
+		Send(MESSAGE_TAG_PARAM_VALUE, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Params...);
+	}
+
 	/**
 	 * Template method to subscribe the message endpoint to the specified type of messages with the default message scope.
 	 *
@@ -891,6 +946,26 @@ public:
 	void Subscribe()
 	{
 		Subscribe(MessageType::StaticStruct()->GetFName(), FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+	}
+
+	template <typename HandlerType>
+	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
+	               typename TRawSGMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	{
+		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
+
+		WithRawMessageHandler(MessageTag, Handler, HandlerFunc);
+
+		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+	}
+
+	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const TFunctionSGMessageHandler<FSGMessage>::FuncType HandlerFunc)
+	{
+		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
+
+		WithFunctionMessageHandler(MessageTag, HandlerFunc);
+
+		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
 	}
 
 	/**
@@ -953,7 +1028,68 @@ public:
 	}
 
 protected:
+	/**
+	 * Adds a message handler for the given type of messages (via raw function pointers).
+	 *
+	 * It is legal to configure multiple handlers for the same message type. Each
+	 * handler will be executed when a message of the specified type is received.
+	 *
+	 * This overload is used to register raw class member functions.
+	 *
+	 * @param HandlerType The type of the object handling the messages.
+	 * @param MessageType The type of messages to handle.
+	 * @param Handler The class handling the messages.
+	 * @param HandlerFunc The class function handling the messages.
+	 * @return This instance (for method chaining).
+	 * @see WithHandler
+	 */
+	template <typename HandlerType>
+	void WithRawMessageHandler(const FName& MessageTag, HandlerType* Handler,
+	                           typename TRawSGMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	{
+		WithHandler(
+			MessageTag,
+			MakeShareable(new TRawSGMessageHandler<FSGMessage, HandlerType>(Handler, MoveTemp(HandlerFunc))));
+	}
 
+	/**
+	 * Adds a message handler for the given type of messages (via TFunction object).
+	 *
+	 * It is legal to configure multiple handlers for the same message type. Each
+	 * handler will be executed when a message of the specified type is received.
+	 *
+	 * This overload is used to register functions that are compatible with TFunction
+	 * function objects, such as global and static functions, as well as lambdas.
+	 *
+	 * @param MessageType The type of messages to handle.
+	 * @param Function The function object handling the messages.
+	 * @return This instance (for method chaining).
+	 * @see WithHandler
+	 */
+	void WithFunctionMessageHandler(const FName& MessageTag,
+	                                TFunctionSGMessageHandler<FSGMessage>::FuncType HandlerFunc)
+	{
+		WithHandler(MessageTag, MakeShareable(new TFunctionSGMessageHandler<FSGMessage>(MoveTemp(HandlerFunc))));
+	}
+
+	/**
+	 * Registers a message handler with the endpoint.
+	 *
+	 * It is legal to configure multiple handlers for the same message type. Each
+	 * handler will be executed when a message of the specified type is received.
+	 *
+	 * @param MessageType
+	 * @param Handler The handler to add.
+	 * @return This instance (for method chaining).
+	 * @see Handling, WithCatchall
+	 */
+	void WithHandler(const FName& MessageTag, const TSharedRef<ISGMessageHandler, ESPMode::ThreadSafe>& Handler)
+	{
+		auto& Handlers = HandlerMap.FindOrAdd(MessageTag);
+
+		Handlers.Add(Handler);
+	}
+	
 	/**
 	 * Clears all handlers in a way that guarantees it won't overlap with message processing. This preserves internal integrity
 	 * of the array and cases where our owner may be shutting down while receiving messages.
@@ -961,7 +1097,7 @@ protected:
 	void ClearHandlers()
 	{
 		FScopeLock Lock(&HandlersCS);
-		Handlers.Empty();
+		HandlerMap.Empty();
 	}
 
 	/**
@@ -993,9 +1129,12 @@ protected:
 
 		FScopeLock Lock(&HandlersCS);
 
-		for (int32 HandlerIndex = 0; HandlerIndex < Handlers.Num(); ++HandlerIndex)
+		if (const auto Handlers = HandlerMap.Find(Context->GetMessageType()))
 		{
-			Handlers[HandlerIndex]->HandleMessage(Context);
+			for (int32 HandlerIndex = 0; HandlerIndex < Handlers->Num(); ++HandlerIndex)
+			{
+				(*Handlers)[HandlerIndex]->HandleMessage(Context);
+			}
 		}
 	}
 
@@ -1011,7 +1150,7 @@ private:
 	bool Enabled;
 
 	/** Holds the registered message handlers. */
-	TArray<TSharedPtr<ISGMessageHandler, ESPMode::ThreadSafe>> Handlers;
+	TMap<FName, TArray<TSharedPtr<ISGMessageHandler, ESPMode::ThreadSafe>>> HandlerMap;
 
 	/** Holds a delegate that is invoked on disconnection events. */
 	FOnBusNotification NotificationDelegate;

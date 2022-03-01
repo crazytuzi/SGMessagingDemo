@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interface/ISGMessageBus.h"
-#include "MessageBusType.h"
 #include "Common/SGMessageEndpoint.h"
 #include "MessageBusReply.generated.h"
 
@@ -27,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	void OnRequest(const FTestRequestMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
+	void OnRequest(const FSGMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
 public:
 	/** Holds a pointer to the message bus. */

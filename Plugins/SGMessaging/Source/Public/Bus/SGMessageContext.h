@@ -67,6 +67,32 @@ public:
 		, TypeInfo(InTypeInfo)
 	{ }
 
+	FSGMessageContext(
+	const FName& InMessageTag,
+	void* InMessage,
+	const TMap<FName, FString>& InAnnotations,
+	const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment,
+	const FSGMessageAddress& InSender,
+	const TArray<FSGMessageAddress>& InRecipients,
+	ESGMessageScope InScope,
+	ESGMessageFlags InFlags,
+	const FDateTime& InTimeSent,
+	const FDateTime& InExpiration,
+	ENamedThreads::Type InSenderThread
+)
+	: Annotations(InAnnotations)
+	, Attachment(InAttachment)
+	, Expiration(InExpiration)
+	, MessageTag(InMessageTag)
+	, Message(InMessage)
+	, Recipients(InRecipients)
+	, Scope(InScope)
+	, Flags(InFlags)
+	, Sender(InSender)
+	, SenderThread(InSenderThread)
+	, TimeSent(InTimeSent)
+	{ }
+
 	/**
 	 * Creates and initializes a new message context from an existing context.
 	 *
@@ -118,6 +144,7 @@ public:
 	virtual ENamedThreads::Type GetSenderThread() const override;
 	virtual const FDateTime& GetTimeForwarded() const override;
 	virtual const FDateTime& GetTimeSent() const override;
+	virtual FName GetMessageType() const override;
 
 private:
 
@@ -129,6 +156,8 @@ private:
 
 	/** Holds the expiration time. */
 	FDateTime Expiration;
+
+	FName MessageTag;
 
 	/** Holds the message. */
 	void* Message;

@@ -7,7 +7,6 @@
 #include "Interface/ISGMessageBus.h"
 #include "Interface/ISGMessageContext.h"
 #include "Common/SGMessageEndpoint.h"
-#include "MessageBusType.h"
 #include "MessageBusSubscribe.generated.h"
 
 UCLASS()
@@ -28,7 +27,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	void OnReceive(const FTestPublishMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
+	void OnReceive(const FSGMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
 public:
 	/** Holds a pointer to the message bus. */

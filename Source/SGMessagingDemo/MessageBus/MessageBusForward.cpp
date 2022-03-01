@@ -5,6 +5,7 @@
 #include "Common/SGMessageEndpointBuilder.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "MessageBusType.h"
 
 // Sets default values
 AMessageBusForward::AMessageBusForward()
@@ -21,8 +22,9 @@ void AMessageBusForward::BeginPlay()
 
 	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
 
-	MessageEndpoint = FSGMessageEndpoint::Builder("Request-Reply", MessageBus.ToSharedRef()).Handling<
-		FTestRequestMessage>(this, &AMessageBusForward::OnForward);
+	MessageEndpoint = FSGMessageEndpoint::Builder("Request-Reply", MessageBus.ToSharedRef());
+
+	MessageEndpoint->Subscribe(TopicB, TopicB_MessageID1, this, &AMessageBusForward::OnForward);
 }
 
 // Called every frame
@@ -32,13 +34,13 @@ void AMessageBusForward::Tick(float DeltaTime)
 
 }
 
-void AMessageBusForward::OnForward(const FTestRequestMessage& Message,
+void AMessageBusForward::OnForward(const FSGMessage& Message,
                                    const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context)
 {
 	UE_LOG(LogTemp, Log, TEXT("AMessageBusForward::OnForward IsDedicatedServer:%s Name:%s => %s"),
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
-	       *Message.Val);
+	       *Message.Get<FString>("Val"));
 
-	MessageEndpoint->Send<FTestReplyMessage>(new FTestReplyMessage("OnForward-Reply"), Context->GetSender());
+	MessageEndpoint->Send(TopicB, TopicB_MessageID2, Context->GetSender(), "Val", FString("Forward-Request"));
 }
 

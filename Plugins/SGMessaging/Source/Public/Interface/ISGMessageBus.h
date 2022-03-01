@@ -159,6 +159,10 @@ public:
 	 */
 	virtual void Publish(void* Message, UScriptStruct* TypeInfo, ESGMessageScope Scope, const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) = 0;
 
+	virtual void Publish(const FName& MessageTag, void* Message, ESGMessageScope Scope,
+	                     const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration,
+	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) = 0;
+	
 	/**
 	 * Registers a message recipient with the message bus.
 	 *
@@ -187,6 +191,12 @@ public:
 	 */
 	virtual void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TMap<FName, FString>& Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) = 0;
 
+	virtual void Send(const FName& MessageTag, void* Message, ESGMessageFlags Flags,
+	                  const TMap<FName, FString>& Annotations,
+	                  const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment,
+	                  const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration,
+	                  const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) = 0;
+	
 	/**
 	 * Shuts down the message bus.
 	 *

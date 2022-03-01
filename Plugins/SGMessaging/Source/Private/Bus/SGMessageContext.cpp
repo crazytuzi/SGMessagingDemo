@@ -142,3 +142,13 @@ const FDateTime& FSGMessageContext::GetTimeSent() const
 
 	return TimeSent;
 }
+
+FName FSGMessageContext::GetMessageType() const
+{
+	if (OriginalContext.IsValid())
+	{
+		return OriginalContext->GetMessageType();
+	}
+
+	return MessageTag;
+}

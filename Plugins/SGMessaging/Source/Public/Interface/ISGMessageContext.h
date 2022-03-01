@@ -327,24 +327,15 @@ public:
 	 */
 	virtual const FDateTime& GetTimeSent() const = 0;
 
-public:
-
 	/**
 	 * Gets the name of the message type.
 	 *
 	 * @return Message type name.
 	 * @see GetMessage, GetMessageTypeInfo
 	 */
-	FName GetMessageType() const
-	{
-		if (IsValid())
-		{
-			UStruct* MessageTypeInfoPtr = GetMessageTypeInfo().Get();
-			return MessageTypeInfoPtr->GetFName();
-		}
-		
-		return NAME_None;
-	}
+	virtual FName GetMessageType() const = 0;
+
+public:
 
 	/**
 	 * Checks whether this is a forwarded message.
@@ -365,7 +356,7 @@ public:
 	 */
 	bool IsValid() const
 	{
-		return ((GetMessage() != nullptr) && GetMessageTypeInfo().IsValid(false, true));
+		return GetMessage() != nullptr;
 	}
 
 public:

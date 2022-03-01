@@ -120,6 +120,29 @@ void FSGMessageBus::Publish(
 	));
 }
 
+void FSGMessageBus::Publish(
+	const FName& MessageTag,
+	void* Message,
+	ESGMessageScope Scope,
+	const TMap<FName, FString>& Annotations,
+	const FTimespan& Delay,
+	const FDateTime& Expiration,
+	const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher)
+{
+	Router->RouteMessage(MakeShared<FSGMessageContext, ESPMode::ThreadSafe>(
+		MessageTag,
+		Message,
+		Annotations,
+		nullptr,
+		Publisher->GetSenderAddress(),
+		TArray<FSGMessageAddress>(),
+		Scope,
+		ESGMessageFlags::None,
+		FDateTime::UtcNow() + Delay,
+		Expiration,
+		FTaskGraphInterface::Get().GetCurrentThreadIfKnown()
+	));
+}
 
 void FSGMessageBus::Register(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
 {
@@ -145,6 +168,32 @@ void FSGMessageBus::Send(
 	Router->RouteMessage(MakeShared<FSGMessageContext, ESPMode::ThreadSafe>(
 		Message,
 		TypeInfo,
+		Annotations,
+		Attachment,
+		Sender->GetSenderAddress(),
+		Recipients,
+		ESGMessageScope::Network,
+		Flags,
+		FDateTime::UtcNow() + Delay,
+		Expiration,
+		FTaskGraphInterface::Get().GetCurrentThreadIfKnown()
+	));
+}
+
+void FSGMessageBus::Send(
+	const FName& MessageTag,
+	void* Message, ESGMessageFlags Flags,
+	const TMap<FName, FString>& Annotations,
+	const TSharedPtr<ISGMessageAttachment,
+	ESPMode::ThreadSafe>& Attachment,
+	const TArray<FSGMessageAddress>& Recipients,
+	const FTimespan& Delay,
+	const FDateTime& Expiration,
+	const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender)
+{
+	Router->RouteMessage(MakeShared<FSGMessageContext, ESPMode::ThreadSafe>(
+		MessageTag,
+		Message,
 		Annotations,
 		Attachment,
 		Sender->GetSenderAddress(),

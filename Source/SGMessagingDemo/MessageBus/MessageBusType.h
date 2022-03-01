@@ -5,44 +5,23 @@
 #include "CoreMinimal.h"
 #include "MessageBusType.generated.h"
 
-USTRUCT()
-struct FTestPublishMessage
+UENUM(BlueprintType)
+enum ETopicID
 {
-	GENERATED_USTRUCT_BODY()
-
-	FString Val;
-
-	FTestPublishMessage() = default;
-
-	explicit FTestPublishMessage(FString InVal): Val(InVal)
-	{
-	};
+	TopicA,
+	TopicB
 };
 
-USTRUCT()
-struct FTestRequestMessage
+UENUM(BlueprintType)
+enum ETopicA_MessageID
 {
-	GENERATED_USTRUCT_BODY()
-
-	FString Val;
-
-	FTestRequestMessage() = default;
-
-	explicit FTestRequestMessage(FString InVal): Val(InVal)
-	{
-	};
+	TopicA_MessageID1,
+	TopicA_MessageID2
 };
 
-USTRUCT()
-struct FTestReplyMessage
+UENUM(BlueprintType)
+enum ETopicB_MessageID
 {
-	GENERATED_USTRUCT_BODY()
-
-	FString Val;
-
-	FTestReplyMessage() = default;
-
-	explicit FTestReplyMessage(FString InVal): Val(InVal)
-	{
-	};
+	TopicB_MessageID1,
+	TopicB_MessageID2
 };

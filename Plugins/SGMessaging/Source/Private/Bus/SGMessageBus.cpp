@@ -182,11 +182,11 @@ void FSGMessageBus::Send(
 
 void FSGMessageBus::Send(
 	const FName& MessageTag,
-	void* Message, ESGMessageFlags Flags,
-	const TMap<FName, FString>& Annotations,
-	const TSharedPtr<ISGMessageAttachment,
-	ESPMode::ThreadSafe>& Attachment,
+	void* Message,
 	const TArray<FSGMessageAddress>& Recipients,
+	ESGMessageFlags Flags,
+	const TMap<FName, FString>& Annotations,
+	const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment,
 	const FTimespan& Delay,
 	const FDateTime& Expiration,
 	const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender)

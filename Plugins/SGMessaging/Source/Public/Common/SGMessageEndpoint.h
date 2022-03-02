@@ -17,6 +17,7 @@
 #include "SGMessageHandlers.h"
 #include "Message/SGMessage.h"
 #include "Message/SGMessageBuilder.h"
+#include "Message/SGMessageParameter.h"
 #include "Message/SGMessageTagBuilder.h"
 #include "Misc/Guid.h"
 #include "Templates/SharedPointer.h"
@@ -683,23 +684,22 @@ public:
 	}
 
 	template <typename MessageType>
-	void Publish(const FName& MessageTag, MessageType* Message)
+	void Publish(const FName& MessageTag, MessageType* Message, CONST_PUBLISH_PARAMETER)
 	{
 		const auto Bus = GetBusIfEnabled();
 
 		if (Bus.IsValid())
 		{
-			Bus->Publish(MessageTag, Message, ESGMessageScope::Network, TMap<FName, FString>(), FTimespan::Zero(),
-			             FDateTime::MaxValue(), AsShared());
+			Bus->Publish(MessageTag, Message, PUBLISH_PARAMETER_FORWARD, AsShared());
 		}
 	}
 
 	template <typename ...Args>
-	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, Args&&... Params)
+	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER, Args&&... Params)
 	{
 		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
 
-		Publish(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message);
+		Publish(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message, MESSAGE_PARAMETER);
 	}
 
 	/**
@@ -901,35 +901,36 @@ public:
 	}
 
 	template <typename MessageType>
-	void Send(const FName& MessageTag, MessageType* Message, const TArray<FSGMessageAddress>& Recipients)
+	void Send(const FName& MessageTag, MessageType* Message, const TArray<FSGMessageAddress>& Recipients,
+	          CONST_SEND_PARAMETER)
 	{
 		const auto Bus = GetBusIfEnabled();
 
 		if (Bus.IsValid())
 		{
-			Bus->Send(MessageTag, Message, ESGMessageFlags::None, TMap<FName, FString>(), nullptr, Recipients,
-			          FTimespan::Zero(), FDateTime::MaxValue(), AsShared());
+			Bus->Send(MessageTag, Message, Recipients, SEND_PARAMETER_FORWARD, AsShared());
 		}
 	}
 
 	template <typename MessageType>
-	void Send(const FName& MessageTag, MessageType* Message, const FSGMessageAddress& Recipient)
+	void Send(const FName& MessageTag, MessageType* Message, const FSGMessageAddress& Recipient, CONST_SEND_PARAMETER)
 	{
-		Send(MessageTag, Message, TArrayBuilder<FSGMessageAddress>().Add(Recipient));
+		Send(MessageTag, Message, TArrayBuilder<FSGMessageAddress>().Add(Recipient), MESSAGE_PARAMETER);
 	}
 
 	template <typename ...Args>
-	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& Recipients, Args&&... Params)
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& Recipients, CONST_SEND_PARAMETER,
+	          Args&&... Params)
 	{
 		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
 
-		Send(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message, Recipients);
+		Send(FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE), Message, Recipients, MESSAGE_PARAMETER);
 	}
 
 	template <typename ...Args>
-	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& Recipient, Args&&... Params)
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& Recipient, CONST_SEND_PARAMETER, Args&&... Params)
 	{
-		Send(MESSAGE_TAG_PARAM_VALUE, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Params...);
+		Send(MESSAGE_TAG_PARAM_VALUE, TArrayBuilder<FSGMessageAddress>().Add(Recipient), MESSAGE_PARAMETER, Params...);
 	}
 
 	/**

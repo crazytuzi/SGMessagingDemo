@@ -28,6 +28,6 @@ void AMessageBusPublish::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MessageEndpoint->Publish(TopicA, TopicA_MessageID1, "Val", FString("Publish-Subscribe"));
+	MessageEndpoint->Publish(TopicA, TopicA_MessageID1, DEFAULT_PUBLISH_PARAMETER, "Val", FString("Publish-Subscribe"));
 }
 

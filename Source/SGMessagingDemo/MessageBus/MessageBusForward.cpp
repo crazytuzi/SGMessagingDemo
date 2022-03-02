@@ -41,6 +41,7 @@ void AMessageBusForward::OnForward(const FSGMessage& Message,
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
 	       *Message.Get<FString>("Val"));
 
-	MessageEndpoint->Send(TopicB, TopicB_MessageID2, Context->GetSender(), "Val", FString("Forward-Request"));
+	MessageEndpoint->Send(TopicB, TopicB_MessageID2, Context->GetSender(), DEFAULT_SEND_PARAMETER, "Val",
+	                      FString("Forward-Request"));
 }
 

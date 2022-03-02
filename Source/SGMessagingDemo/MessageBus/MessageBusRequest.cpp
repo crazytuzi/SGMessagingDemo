@@ -41,7 +41,8 @@ void AMessageBusRequest::Tick(float DeltaTime)
 		Recipients.Add(Iterator->MessageEndpoint->GetAddress());
 	}
 
-	MessageEndpoint->Send(TopicB, TopicB_MessageID1, Recipients, "Val", FString("Request-Reply"));
+	MessageEndpoint->Send(TopicB, TopicB_MessageID1, Recipients, DEFAULT_SEND_PARAMETER, "Val",
+	                      FString("Request-Reply"));
 }
 
 void AMessageBusRequest::OnReply(const FSGMessage& Message,

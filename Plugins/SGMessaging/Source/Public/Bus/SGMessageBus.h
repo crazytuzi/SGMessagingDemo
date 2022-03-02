@@ -49,10 +49,14 @@ public:
 	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) override;
 	virtual void Register(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient) override;
 	virtual void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TMap<FName, FString>& Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) override;
-	virtual void Send(const FName& MessageTag, void* Message, ESGMessageFlags Flags,
+	virtual void Send(const FName& MessageTag,
+	                  void* Message,
+	                  const TArray<FSGMessageAddress>& Recipients,
+	                  ESGMessageFlags Flags,
 	                  const TMap<FName, FString>& Annotations,
 	                  const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment,
-	                  const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration,
+	                  const FTimespan& Delay,
+	                  const FDateTime& Expiration,
 	                  const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) override;
 	virtual void Shutdown() override;
 	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType, const FSGMessageScopeRange& ScopeRange) override;

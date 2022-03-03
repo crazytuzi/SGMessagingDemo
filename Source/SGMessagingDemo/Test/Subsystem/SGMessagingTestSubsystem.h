@@ -12,6 +12,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestRequestReply);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestForwardReply);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestDelayPublishSubscribe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestDelayRequestReply);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestDelayForwardReply);
+
 /**
  * 
  */
@@ -28,7 +34,16 @@ public:
 	void TestRequestReply();
 
 	UFUNCTION(BlueprintCallable)
-	void TestForward();
+	void TestForwardReply();
+
+	UFUNCTION(BlueprintCallable)
+	void TestDelayPublishSubscribe();
+
+	UFUNCTION(BlueprintCallable)
+	void TestDelayRequestReply();
+
+	UFUNCTION(BlueprintCallable)
+	void TestDelayForwardReply();
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -39,4 +54,13 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTestForwardReply TestForwardReplyDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestDelayPublishSubscribe TestDelayPublishSubscribeDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestDelayRequestReply TestDelayRequestReplyDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestDelayForwardReply TestDelayForwardReplyDelegate;
 };

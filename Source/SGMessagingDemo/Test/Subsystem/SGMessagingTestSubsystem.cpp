@@ -19,10 +19,34 @@ void USGMessagingTestSubsystem::TestRequestReply()
 	}
 }
 
-void USGMessagingTestSubsystem::TestForward()
+void USGMessagingTestSubsystem::TestForwardReply()
 {
 	if (TestForwardReplyDelegate.IsBound())
 	{
 		TestForwardReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestDelayPublishSubscribe()
+{
+	if (TestDelayPublishSubscribeDelegate.IsBound())
+	{
+		TestDelayPublishSubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestDelayRequestReply()
+{
+	if (TestDelayRequestReplyDelegate.IsBound())
+	{
+		TestDelayRequestReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestDelayForwardReply()
+{
+	if (TestDelayForwardReplyDelegate.IsBound())
+	{
+		TestDelayForwardReplyDelegate.Broadcast();
 	}
 }

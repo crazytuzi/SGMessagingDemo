@@ -5,12 +5,14 @@
 #include "Misc/CoreMisc.h"
 #include "Misc/CoreDelegates.h"
 #include "Modules/ModuleManager.h"
+#include "Settings/Public/ISettingsModule.h"
 #include "Bus/SGMessageDispatchTask.h"
 #include "Interface//ISGMessageBus.h"
 #include "Bus/SGMessageBus.h"
 #include "Bridge/SGMessageBridge.h"
 #include "Interface/ISGMessagingModule.h"
 #include "Interface/ISGNetworkMessagingExtension.h"
+#include "Settings/SGMessagingSettings.h"
 
 
 #ifndef PLATFORM_SUPPORTS_SGMESSAGEBUS
@@ -18,6 +20,8 @@
 #endif
 
 DEFINE_LOG_CATEGORY(LogSGMessaging);
+
+#define LOCTEXT_NAMESPACE "FSGMessagingModule"
 
 /**
  * Implements the SGMessaging module.
@@ -93,6 +97,18 @@ public:
 		FCoreDelegates::OnPreExit.AddRaw(this, &FSGMessagingModule::HandleCorePreExit);
 		DefaultBus = CreateBus(TEXT("DefaultBus"), nullptr);
 #endif	//PLATFORM_SUPPORTS_MESSAGEBUS
+
+		if (const auto SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+		{
+			SettingsModule->RegisterSettings("Project",
+			                                 "Plugins",
+			                                 "SGMessaging",
+			                                 LOCTEXT("SGMessagingSettingsName", "SGMessaging"),
+			                                 LOCTEXT("SGMessagingSettingsDescription",
+			                                         "Configure the SGMessaging plugin"),
+			                                 GetMutableDefault<USGMessagingSettings>()
+			);
+		}
 	}
 
 	virtual void ShutdownModule() override
@@ -102,6 +118,11 @@ public:
 #if PLATFORM_SUPPORTS_SGMESSAGEBUS
 		FCoreDelegates::OnPreExit.RemoveAll(this);
 #endif	//PLATFORM_SUPPORTS_MESSAGEBUS
+
+		if (const auto SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+		{
+			SettingsModule->UnregisterSettings("Project", "Plugins", "SGMessaging");
+		}
 	}
 
 	virtual bool SupportsDynamicReloading() override

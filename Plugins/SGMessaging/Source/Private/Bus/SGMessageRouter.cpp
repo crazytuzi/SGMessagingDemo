@@ -9,6 +9,7 @@
 #include "Interface/ISGMessageInterceptor.h"
 #include "Interface/ISGMessageBusListener.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Settings/SGMessagingSettings.h"
 
 
 /* FSGMessageRouter structors
@@ -23,7 +24,10 @@ FSGMessageRouter::FSGMessageRouter()
 	ActiveSubscriptions.FindOrAdd(NAME_All);
 	WorkEvent = FPlatformProcess::GetSynchEventFromPool();
 
-	GConfig->GetBool(TEXT("SGMessaging"), TEXT("bAllowDelayedMessaging"), bAllowDelayedMessaging, GEngineIni);
+	if (const auto SGMessagingSettings = GetMutableDefault<USGMessagingSettings>())
+	{
+		bAllowDelayedMessaging = SGMessagingSettings->bAllowDelayedMessaging;
+	}
 }
 
 

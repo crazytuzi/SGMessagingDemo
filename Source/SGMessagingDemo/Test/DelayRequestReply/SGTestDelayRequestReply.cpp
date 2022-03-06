@@ -53,11 +53,8 @@ void ASGTestDelayRequestReply::OnDelegateBroadcast()
 		Recipients.Add(Iterator->MessageEndpoint->GetAddress());
 	}
 
-	const auto Parameter = FSGMessageParameter::FSendParameter(ESGMessageFlags::None, TMapBuilder<FName, FString>(),
-	                                                           nullptr, FTimespan(0, 0, 5));
-
-	MessageEndpoint->Send(Topic_DelayRequestReply, TopicDelayRequestReply_Request, Recipients, Parameter, "Val",
-	                      FString("DelayRequest-Reply Request"));
+	MessageEndpoint->Send(Topic_DelayRequestReply, TopicDelayRequestReply_Request, Recipients,
+	                      DELAY_SEND_PARAMETER(FTimespan(0, 0, 5)), "Val", FString("DelayRequest-Reply Request"));
 }
 
 void ASGTestDelayRequestReply::OnRequest(const FSGMessage& Message,
@@ -67,11 +64,8 @@ void ASGTestDelayRequestReply::OnRequest(const FSGMessage& Message,
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
 	       *Message.Get<FString>("Val"));
 
-	const auto Parameter = FSGMessageParameter::FSendParameter(ESGMessageFlags::None, TMapBuilder<FName, FString>(),
-	                                                           nullptr, FTimespan(0, 0, 5));
-
-	MessageEndpoint->Send(Topic_DelayRequestReply, TopicDelayRequestReply_Reply, Context->GetSender(), Parameter,
-	                      "Val", FString("DelayRequest-Reply Reply"));
+	MessageEndpoint->Send(Topic_DelayRequestReply, TopicDelayRequestReply_Reply, Context->GetSender(),
+	                      DELAY_SEND_PARAMETER(FTimespan(0, 0, 5)), "Val", FString("DelayRequest-Reply Reply"));
 }
 
 void ASGTestDelayRequestReply::OnReply(const FSGMessage& Message,

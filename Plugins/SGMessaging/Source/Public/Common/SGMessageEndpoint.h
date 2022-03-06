@@ -684,7 +684,7 @@ public:
 	}
 
 	template <typename MessageType>
-	void Publish(const FName& MessageTag, MessageType* Message, CONST_PUBLISH_PARAMETER)
+	void Publish(const FName& MessageTag, MessageType* Message, CONST_PUBLISH_PARAMETER_SIGNATURE)
 	{
 		const auto Bus = GetBusIfEnabled();
 
@@ -695,7 +695,7 @@ public:
 	}
 
 	template <typename ...Args>
-	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER, Args&&... Params)
+	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER_SIGNATURE, Args&&... Params)
 	{
 		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
 
@@ -902,7 +902,7 @@ public:
 
 	template <typename MessageType>
 	void Send(const FName& MessageTag, MessageType* Message, const TArray<FSGMessageAddress>& Recipients,
-	          CONST_SEND_PARAMETER)
+	          CONST_SEND_PARAMETER_SIGNATURE)
 	{
 		const auto Bus = GetBusIfEnabled();
 
@@ -913,13 +913,14 @@ public:
 	}
 
 	template <typename MessageType>
-	void Send(const FName& MessageTag, MessageType* Message, const FSGMessageAddress& Recipient, CONST_SEND_PARAMETER)
+	void Send(const FName& MessageTag, MessageType* Message, const FSGMessageAddress& Recipient,
+	          CONST_SEND_PARAMETER_SIGNATURE)
 	{
 		Send(MessageTag, Message, TArrayBuilder<FSGMessageAddress>().Add(Recipient), MESSAGE_PARAMETER);
 	}
 
 	template <typename ...Args>
-	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& Recipients, CONST_SEND_PARAMETER,
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& Recipients, CONST_SEND_PARAMETER_SIGNATURE,
 	          Args&&... Params)
 	{
 		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
@@ -928,7 +929,8 @@ public:
 	}
 
 	template <typename ...Args>
-	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& Recipient, CONST_SEND_PARAMETER, Args&&... Params)
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& Recipient, CONST_SEND_PARAMETER_SIGNATURE,
+	          Args&&... Params)
 	{
 		Send(MESSAGE_TAG_PARAM_VALUE, TArrayBuilder<FSGMessageAddress>().Add(Recipient), MESSAGE_PARAMETER, Params...);
 	}

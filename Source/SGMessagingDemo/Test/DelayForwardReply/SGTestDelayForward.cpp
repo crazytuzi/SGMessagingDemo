@@ -41,11 +41,7 @@ void ASGTestDelayForward::OnForward(const FSGMessage& Message,
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
 	       *Message.Get<FString>("Val"));
 
-	const auto Parameter = FSGMessageParameter::FSendParameter(ESGMessageFlags::None, TMapBuilder<FName, FString>(),
-	                                                           nullptr, FTimespan(0, 0, 5));
-
-
-	MessageEndpoint->Send(Topic_DelayForwardReply, TopicDelayForwardReply_Reply, Context->GetSender(), Parameter,
-	                      "Val", FString("DelayForward-Request Forward"));
+	MessageEndpoint->Send(Topic_DelayForwardReply, TopicDelayForwardReply_Reply, Context->GetSender(),
+	                      DELAY_SEND_PARAMETER(FTimespan(0, 0, 5)), "Val", FString("DelayForward-Request Forward"));
 }
 

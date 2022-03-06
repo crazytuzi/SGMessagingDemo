@@ -53,12 +53,8 @@ void ASGTestDelayRequest::OnDelegateBroadcast()
 		Recipients.Add(Iterator->MessageEndpoint->GetAddress());
 	}
 
-	const auto Parameter = FSGMessageParameter::FSendParameter(ESGMessageFlags::None, TMapBuilder<FName, FString>(),
-	                                                           nullptr, FTimespan(0, 0, 5));
-
-
-	MessageEndpoint->Send(Topic_DelayForwardReply, TopicDelayForwardReply_Request, Recipients, Parameter, "Val",
-	                      FString("DelayForward-Reply Request"));
+	MessageEndpoint->Send(Topic_DelayForwardReply, TopicDelayForwardReply_Request, Recipients,
+	                      DELAY_SEND_PARAMETER(FTimespan(0, 0, 5)), "Val", FString("DelayForward-Reply Request"));
 }
 
 void ASGTestDelayRequest::OnReply(const FSGMessage& Message,

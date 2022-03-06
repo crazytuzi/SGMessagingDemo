@@ -45,10 +45,8 @@ void ASGTestDelayPublishSubscribe::Tick(float DeltaTime)
 
 void ASGTestDelayPublishSubscribe::OnDelegateBroadcast()
 {
-	const auto Parameter = FSGMessageParameter::FPublishParameter(ESGMessageScope::Network,
-	                                                              TMapBuilder<FName, FString>(), FTimespan(0, 0, 5));
-
-	MessageEndpoint->Publish(Topic_DelayPublishSubscribe, TopicDelayPublishSubscribe_Publish, Parameter, "Val",
+	MessageEndpoint->Publish(Topic_DelayPublishSubscribe, TopicDelayPublishSubscribe_Publish,
+	                         DELAY_PUBLISH_PARAMETER(FTimespan(0, 0, 5)), "Val",
 	                         FString("DelayPublish-Subscribe Publish"));
 }
 

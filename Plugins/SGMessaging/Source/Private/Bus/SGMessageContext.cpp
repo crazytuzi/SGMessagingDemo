@@ -135,11 +135,6 @@ const FDateTime& FSGMessageContext::GetTimeForwarded() const
 
 const FDateTime& FSGMessageContext::GetTimeSent() const
 {
-	if (OriginalContext.IsValid())
-	{
-		return OriginalContext->GetTimeSent();
-	}
-
 	return TimeSent;
 }
 

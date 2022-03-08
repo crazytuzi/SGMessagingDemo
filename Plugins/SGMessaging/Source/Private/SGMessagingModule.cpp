@@ -7,7 +7,7 @@
 #include "Modules/ModuleManager.h"
 #include "Settings/Public/ISettingsModule.h"
 #include "Bus/SGMessageDispatchTask.h"
-#include "Interface//ISGMessageBus.h"
+#include "Interface/ISGMessageBus.h"
 #include "Bus/SGMessageBus.h"
 #include "Bridge/SGMessageBridge.h"
 #include "Interface/ISGMessagingModule.h"
@@ -16,7 +16,7 @@
 
 
 #ifndef PLATFORM_SUPPORTS_SGMESSAGEBUS
-	#define PLATFORM_SUPPORTS_SGMESSAGEBUS !(WITH_SERVER_CODE && UE_BUILD_SHIPPING)
+	#define PLATFORM_SUPPORTS_SGMESSAGEBUS 1
 #endif
 
 DEFINE_LOG_CATEGORY(LogSGMessaging);
@@ -69,9 +69,24 @@ public:
 		return Bus;
 	}
 
-	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> GetDefaultBus() const override
+	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> GetDefaultBus(UObject* WorldContextObject = nullptr) const override
 	{
+#if WITH_EDITOR
+		if(WorldContextObject != nullptr)
+		{
+			if(const auto World = WorldContextObject->GetWorld())
+			{
+				if(const auto Bus = DefaultBusMap.Find(World->GetFName()))
+				{
+					return *Bus;
+				}
+			}
+		}
+
+		return nullptr;
+#else
 		return DefaultBus;
+#endif
 	}
 	
 	virtual TArray<TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>> GetAllBuses() const override
@@ -95,7 +110,9 @@ public:
 	{
 #if PLATFORM_SUPPORTS_SGMESSAGEBUS
 		FCoreDelegates::OnPreExit.AddRaw(this, &FSGMessagingModule::HandleCorePreExit);
+#if !WITH_EDITOR
 		DefaultBus = CreateBus(TEXT("DefaultBus"), nullptr);
+#endif
 #endif	//PLATFORM_SUPPORTS_MESSAGEBUS
 
 		if (const auto SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
@@ -109,6 +126,20 @@ public:
 			                                 GetMutableDefault<USGMessagingSettings>()
 			);
 		}
+
+#if WITH_EDITOR
+		FWorldDelegates::OnPreWorldInitialization.AddLambda(
+			[this](const UWorld* World, const UWorld::InitializationValues IVS)
+			{
+				DefaultBusMap.Add(World->GetFName(), CreateBus(World->GetFName().ToString(), nullptr));
+			});
+
+		FWorldDelegates::OnWorldCleanup.AddLambda(
+			[this](const UWorld* World, bool bSessionEnded, bool bCleanupResources)
+			{
+				DefaultBusMap.Remove(World->GetFName());
+			});
+#endif
 	}
 
 	virtual void ShutdownModule() override
@@ -134,6 +165,34 @@ protected:
 
 	void ShutdownDefaultBus()
 	{
+#if WITH_EDITOR
+		for (const auto& DefaultBusPair : DefaultBusMap)
+		{
+			auto DefaultBus = DefaultBusPair.Value;
+
+			TWeakPtr<ISGMessageBus, ESPMode::ThreadSafe> DefaultBusPtr = DefaultBus;
+
+			DefaultBus->Shutdown();
+
+			DefaultBusPtr.Reset();
+
+			// wait for the bus to shut down
+			int32 SleepCount = 0;
+
+			while (DefaultBusPtr.IsValid())
+			{
+				if (SleepCount > 10)
+				{
+					check(!"Something is holding on the default message bus");
+					break;
+				}
+				
+				++SleepCount;
+				
+				FPlatformProcess::Sleep(0.1f);
+			}
+		}
+#else
 		if (!DefaultBus.IsValid())
 		{
 			return;
@@ -156,6 +215,7 @@ protected:
 			++SleepCount;
 			FPlatformProcess::Sleep(0.1f);
 		}
+#endif
 
 		// validate all other buses were also properly shutdown
 		for (TWeakPtr<ISGMessageBus, ESPMode::ThreadSafe> WeakBus : WeakBuses)
@@ -178,7 +238,11 @@ private:
 
 private:
 	/** Holds the message bus. */
+#if WITH_EDITOR
+	TMap<FName, TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe>> DefaultBusMap;
+#else
 	TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> DefaultBus;
+#endif
 
 	/** All buses that were created through this module including the default one. */
 	TArray<TWeakPtr<ISGMessageBus, ESPMode::ThreadSafe>> WeakBuses;

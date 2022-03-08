@@ -28,7 +28,7 @@ void ASGTestPublishSubscribe::BeginPlay()
 			this, &ASGTestPublishSubscribe::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
+	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
 
 	MessageEndpoint = FSGMessageEndpoint::Builder("Publish-Subscribe", MessageBus.ToSharedRef());
 

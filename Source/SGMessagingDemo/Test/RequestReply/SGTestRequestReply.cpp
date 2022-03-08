@@ -28,7 +28,7 @@ void ASGTestRequestReply::BeginPlay()
 		MessagingTestSubsystem->TestRequestReplyDelegate.AddDynamic(this, &ASGTestRequestReply::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
+	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
 
 	MessageEndpoint = FSGMessageEndpoint::Builder("Request-Reply", MessageBus.ToSharedRef());
 

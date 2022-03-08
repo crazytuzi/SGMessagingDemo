@@ -74,7 +74,8 @@ public:
 	 *
 	 * @return The default bus.
 	 */
-	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> GetDefaultBus() const = 0;
+	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> GetDefaultBus(UObject* WorldContextObject = nullptr) const =
+	0;
 
 	/**
 	 * Gets all message buses that were created by this module via the #CreateBus method

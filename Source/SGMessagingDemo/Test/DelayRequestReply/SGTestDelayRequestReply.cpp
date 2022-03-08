@@ -28,7 +28,7 @@ void ASGTestDelayRequestReply::BeginPlay()
 		MessagingTestSubsystem->TestDelayRequestReplyDelegate.AddDynamic(this, &ASGTestDelayRequestReply::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
+	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
 
 	MessageEndpoint = FSGMessageEndpoint::Builder("DelayRequest-Reply", MessageBus.ToSharedRef());
 

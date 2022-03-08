@@ -30,7 +30,7 @@ void ASGTestDelayRequest::BeginPlay()
 			this, &ASGTestDelayRequest::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
+	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
 
 	MessageEndpoint = FSGMessageEndpoint::Builder("DelayForward-Reply", MessageBus.ToSharedRef());
 

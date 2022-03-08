@@ -30,7 +30,7 @@ void ASGTestRequest::BeginPlay()
 			this, &ASGTestRequest::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus();
+	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
 
 	MessageEndpoint = FSGMessageEndpoint::Builder("Forward-Reply", MessageBus.ToSharedRef());
 

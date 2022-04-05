@@ -2,8 +2,8 @@
 
 
 #include "SGTestPublishSubscribe.h"
+#include "MessagingFramework/Kismet/SGMessageFunctionLibrary.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
-#include "Common/SGMessageEndpointBuilder.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SGMessagingDemo/Test/SGMessagingType.h"
 #include "SGMessagingDemo/Test/Subsystem/SGMessagingTestSubsystem.h"
@@ -11,9 +11,8 @@
 // Sets default values
 ASGTestPublishSubscribe::ASGTestPublishSubscribe()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -28,25 +27,27 @@ void ASGTestPublishSubscribe::BeginPlay()
 			this, &ASGTestPublishSubscribe::OnDelegateBroadcast);
 	}
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
-
-	MessageEndpoint = FSGMessageEndpoint::Builder("Publish-Subscribe", MessageBus.ToSharedRef());
-
-	MessageEndpoint->Subscribe(Topic_PublishSubscribe, TopicPublishSubscribe_Publish, this,
-	                           &ASGTestPublishSubscribe::OnPublish);
+	if (const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoint(this))
+	{
+		MessageEndpoint->Subscribe(Topic_PublishSubscribe, TopicPublishSubscribe_Publish, this,
+		                           &ASGTestPublishSubscribe::OnPublish);
+	}
 }
 
 // Called every frame
 void ASGTestPublishSubscribe::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ASGTestPublishSubscribe::OnDelegateBroadcast()
 {
-	MessageEndpoint->Publish(Topic_PublishSubscribe, TopicPublishSubscribe_Publish, DEFAULT_PUBLISH_PARAMETER, "Val",
-	                         FString("Publish-Subscribe Publish"));
+	if (const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoint(this))
+	{
+		MessageEndpoint->Publish(Topic_PublishSubscribe, TopicPublishSubscribe_Publish, DEFAULT_PUBLISH_PARAMETER,
+		                         "Val",
+		                         FString("Publish-Subscribe Publish"));
+	}
 }
 
 void ASGTestPublishSubscribe::OnPublish(const FSGMessage& Message,
@@ -56,4 +57,3 @@ void ASGTestPublishSubscribe::OnPublish(const FSGMessage& Message,
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
 	       *Message.Get<FString>("Val"));
 }
-

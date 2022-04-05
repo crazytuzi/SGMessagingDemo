@@ -4,16 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interface/ISGMessageBus.h"
-#include "Common/SGMessageEndpoint.h"
+#include "MessagingFramework/Components/SGMessageEndpointComponent.h"
 #include "SGTestReply.generated.h"
 
 UCLASS()
 class SGMESSAGINGDEMO_API ASGTestReply : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ASGTestReply();
 
@@ -21,17 +20,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
 	void OnRequest(const FSGMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
-public:
-	/** Holds a pointer to the message bus. */
-	TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> MessageBus;
-
-	/** Holds the messaging endpoint. */
-	TSharedPtr<FSGMessageEndpoint, ESPMode::ThreadSafe> MessageEndpoint;
+private:
+	UPROPERTY()
+	USGMessageEndpointComponent* MessageEndpointComponent;
 };

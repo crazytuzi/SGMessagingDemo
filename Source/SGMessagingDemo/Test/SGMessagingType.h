@@ -13,7 +13,13 @@ enum ETopicID
 	Topic_ForwardReply,
 	Topic_DelayPublishSubscribe,
 	Topic_DelayRequestReply,
-	Topic_DelayForwardReply
+	Topic_DelayForwardReply,
+	Topic_BlueprintPublishSubscribe,
+	Topic_BlueprintRequestReply,
+	Topic_BlueprintForwardReply,
+	Topic_BlueprintDelayPublishSubscribe,
+	Topic_BlueprintDelayRequestReply,
+	Topic_BlueprintDelayForwardReply,
 };
 
 UENUM(BlueprintType)
@@ -54,4 +60,44 @@ enum ETopicDelayForwardReply_MessageID
 {
 	TopicDelayForwardReply_Request,
 	TopicDelayForwardReply_Reply
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintPublishSubscribe_MessageID
+{
+	TopicBlueprintPublishSubscribe_Publish
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintRequestReply_MessageID
+{
+	TopicBlueprintRequestReply_Request,
+	TopicBlueprintRequestReply_Reply
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintForwardReply_MessageID
+{
+	TopicBlueprintForwardReply_Request,
+	TopicBlueprintForwardReply_Reply
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintDelayPublishSubscribe_MessageID
+{
+	TopicBlueprintDelayPublishSubscribe_Publish
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintDelayRequestReply_MessageID
+{
+	TopicBlueprintDelayRequestReply_Request,
+	TopicBlueprintDelayRequestReply_Reply
+};
+
+UENUM(BlueprintType)
+enum ETopicBlueprintDelayForwardReply_MessageID
+{
+	TopicBlueprintDelayForwardReply_Request,
+	TopicBlueprintDelayForwardReply_Reply
 };

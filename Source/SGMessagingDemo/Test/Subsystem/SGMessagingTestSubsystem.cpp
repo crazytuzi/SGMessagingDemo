@@ -50,3 +50,51 @@ void USGMessagingTestSubsystem::TestDelayForwardReply()
 		TestDelayForwardReplyDelegate.Broadcast();
 	}
 }
+
+void USGMessagingTestSubsystem::TestBlueprintPublishSubscribe()
+{
+	if (TestBlueprintPublishSubscribeDelegate.IsBound())
+	{
+		TestBlueprintPublishSubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBlueprintRequestReply()
+{
+	if (TestBlueprintRequestReplyDelegate.IsBound())
+	{
+		TestBlueprintRequestReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBlueprintForwardReply()
+{
+	if (TestBlueprintForwardReplyDelegate.IsBound())
+	{
+		TestBlueprintForwardReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBlueprintDelayPublishSubscribe()
+{
+	if (TestBlueprintDelayPublishSubscribeDelegate.IsBound())
+	{
+		TestBlueprintDelayPublishSubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBlueprintDelayRequestReply()
+{
+	if (TestBlueprintDelayRequestReplyDelegate.IsBound())
+	{
+		TestBlueprintDelayRequestReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBlueprintDelayForwardReply()
+{
+	if (TestBlueprintDelayForwardReplyDelegate.IsBound())
+	{
+		TestBlueprintDelayForwardReplyDelegate.Broadcast();
+	}
+}

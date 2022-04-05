@@ -4,16 +4,16 @@
 #include "SGTestReply.h"
 #include "EngineUtils.h"
 #include "SGTestForward.h"
-#include "Common/SGMessageEndpointBuilder.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SGMessagingDemo/Test/SGMessagingType.h"
 
 // Sets default values
 ASGTestReply::ASGTestReply()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	MessageEndpointComponent = CreateDefaultSubobject<USGMessageEndpointComponent>(TEXT("MessageEndpointComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -21,21 +21,21 @@ void ASGTestReply::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MessageBus = ISGMessagingModule::Get().GetDefaultBus(this);
-
-	MessageEndpoint = FSGMessageEndpoint::Builder("Forward-Reply", MessageBus.ToSharedRef());
-
-	MessageEndpoint->Subscribe(Topic_ForwardReply, TopicForwardReply_Request, this, &ASGTestReply::OnRequest);
+	if (MessageEndpointComponent != nullptr)
+	{
+		MessageEndpointComponent->Subscribe(Topic_ForwardReply, TopicForwardReply_Request, this,
+		                                    &ASGTestReply::OnRequest);
+	}
 }
 
 // Called every frame
 void ASGTestReply::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ASGTestReply::OnRequest(const FSGMessage& Message, const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context)
+void ASGTestReply::OnRequest(const FSGMessage& Message,
+                             const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context)
 {
 	UE_LOG(LogTemp, Log, TEXT("ASGTestReply::OnRequest IsDedicatedServer:%s Name:%s => %s"),
 	       *UKismetStringLibrary::Conv_BoolToString(UKismetSystemLibrary::IsDedicatedServer(GetWorld())), *GetName(),
@@ -45,9 +45,15 @@ void ASGTestReply::OnRequest(const FSGMessage& Message, const TSharedRef<ISGMess
 
 	for (TActorIterator<ASGTestForward> Iterator(GetWorld()); Iterator; ++Iterator)
 	{
-		Recipients.Add(Iterator->MessageEndpoint->GetAddress());
+		if (const auto Component = Cast<USGMessageEndpointComponent>(
+			Iterator->GetComponentByClass(USGMessageEndpointComponent::StaticClass())))
+		{
+			Recipients.Add(Component->GetAddress());
+		}
 	}
 
-	MessageEndpoint->Forward(Context, Recipients);
+	if (MessageEndpointComponent != nullptr)
+	{
+		MessageEndpointComponent->Forward(Context, Recipients);
+	}
 }
-

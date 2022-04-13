@@ -3,6 +3,15 @@
 
 #include "SGMessagingTestSubsystem.h"
 
+void USGMessagingTestSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	Case = NewObject<USGTestParameterCase>(this);
+
+	Case->Initialize();
+}
+
 void USGMessagingTestSubsystem::TestPublishSubscribe()
 {
 	if (TestPublishSubscribeDelegate.IsBound())
@@ -96,5 +105,21 @@ void USGMessagingTestSubsystem::TestBlueprintDelayForwardReply()
 	if (TestBlueprintDelayForwardReplyDelegate.IsBound())
 	{
 		TestBlueprintDelayForwardReplyDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestCpp2CppParameter()
+{
+	if (TestCpp2CppParameterDelegate.IsBound())
+	{
+		TestCpp2CppParameterDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestCpp2BPParameter()
+{
+	if (TestCpp2BPParameterDelegate.IsBound())
+	{
+		TestCpp2BPParameterDelegate.Broadcast();
 	}
 }

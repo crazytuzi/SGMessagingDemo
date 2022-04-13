@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SGMessagingDemo/Test/Parameter/SGTestParameterCase.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "SGMessagingTestSubsystem.generated.h"
 
@@ -30,6 +31,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBlueprintDelayRequestReply);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBlueprintDelayForwardReply);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCpp2CppParameter);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCpp2BPParameter);
+
 /**
  * 
  */
@@ -37,6 +42,9 @@ UCLASS()
 class SGMESSAGINGDEMO_API USGMessagingTestSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
+
+public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -75,6 +83,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TestBlueprintDelayForwardReply();
 
+	UFUNCTION(BlueprintCallable)
+	void TestCpp2CppParameter();
+
+	UFUNCTION(BlueprintCallable)
+	void TestCpp2BPParameter();
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FTestPublishSubscribe TestPublishSubscribeDelegate;
@@ -111,4 +125,14 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTestBlueprintDelayForwardReply TestBlueprintDelayForwardReplyDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCpp2CppParameter TestCpp2CppParameterDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCpp2CppParameter TestCpp2BPParameterDelegate;
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+	USGTestParameterCase* Case;
 };

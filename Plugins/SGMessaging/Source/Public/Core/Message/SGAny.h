@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SGAnyType.h"
 
 struct FSGAny
 {
@@ -8,16 +9,17 @@ struct FSGAny
 	{
 	}
 
-	FSGAny(const FSGAny& That) : Pointer(That.Clone())
+	FSGAny(const FSGAny& That) : Pointer(That.Clone()), AnyType(That.AnyType)
 	{
 	}
 
-	FSGAny(FSGAny&& That) noexcept : Pointer(MoveTemp(That.Pointer))
+	FSGAny(FSGAny&& That) noexcept : Pointer(MoveTemp(That.Pointer)), AnyType(MoveTemp(That.AnyType))
 	{
 	}
 
-	template <typename T, class = TEnableIf<!TIsSame<TDecay<T>, FSGAny>::Value, T>>
-	explicit FSGAny(T&& Value) : Pointer(new TDerived<typename TDecay<T>::Type>(Forward<T>(Value)))
+	template <typename T, class = TEnableIf<TNot<TIsSame<TDecay<T>, FSGAny>>::Value, T>>
+	explicit FSGAny(T&& Value) : Pointer(new TDerived<typename TDecay<T>::Type>(Forward<T>(Value))),
+	                             AnyType(TSGAnyTraits<typename TRemoveReference<decltype(Value)>::Type>::GetType())
 	{
 	}
 
@@ -27,8 +29,16 @@ struct FSGAny
 	}
 
 	template <class T>
+	bool IsA() const
+	{
+		return AnyType == TSGAnyTraits<T>::GetType();
+	}
+
+	template <class T>
 	T& Cast() const
 	{
+		ensure(IsA<T>());
+
 		auto Derived = static_cast<TDerived<T>*>(Pointer.Get());
 
 		return Derived->Value;
@@ -43,13 +53,15 @@ struct FSGAny
 
 		Pointer = Other.Clone();
 
+		AnyType = Other.AnyType;
+
 		return *this;
 	}
 
 private:
 	struct FBase;
 
-	typedef TUniquePtr<FBase> FBasePtr;
+	using FBasePtr = TUniquePtr<FBase>;
 
 	struct FBase
 	{
@@ -84,4 +96,6 @@ private:
 
 private:
 	FBasePtr Pointer;
+
+	FSGAnyType AnyType;
 };

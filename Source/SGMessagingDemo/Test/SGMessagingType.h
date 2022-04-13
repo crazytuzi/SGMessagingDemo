@@ -20,6 +20,7 @@ enum ETopicID
 	Topic_BlueprintDelayPublishSubscribe,
 	Topic_BlueprintDelayRequestReply,
 	Topic_BlueprintDelayForwardReply,
+	Topic_Parameter
 };
 
 UENUM(BlueprintType)
@@ -100,4 +101,10 @@ enum ETopicBlueprintDelayForwardReply_MessageID
 {
 	TopicBlueprintDelayForwardReply_Request,
 	TopicBlueprintDelayForwardReply_Reply
+};
+
+UENUM(BlueprintType)
+enum ETopicParameter_MessageID
+{
+	TopicParameter_Cpp2Cpp_Publish,
 };

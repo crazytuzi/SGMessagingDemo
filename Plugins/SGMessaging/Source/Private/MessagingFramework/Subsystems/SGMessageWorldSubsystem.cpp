@@ -16,9 +16,9 @@ void USGMessageWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void USGMessageWorldSubsystem::Deinitialize()
 {
-	DefaultBus->MarkPendingKill();
+	DefaultBus->MarkAsGarbage();
 
-	DefaultMessageEndpoint->MarkPendingKill();
+	DefaultMessageEndpoint->MarkAsGarbage();
 
 	Super::Deinitialize();
 }

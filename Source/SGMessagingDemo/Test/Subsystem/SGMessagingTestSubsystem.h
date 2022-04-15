@@ -35,6 +35,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCpp2CppParameter);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCpp2BPParameter);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBP2CppParameter);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBP2BPParameter);
+
 /**
  * 
  */
@@ -89,6 +93,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TestCpp2BPParameter();
 
+	UFUNCTION(BlueprintCallable)
+	void TestBP2CppParameter();
+
+	UFUNCTION(BlueprintCallable)
+	void TestBP2BPParameter();
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FTestPublishSubscribe TestPublishSubscribeDelegate;
@@ -131,6 +141,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTestCpp2CppParameter TestCpp2BPParameterDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCpp2CppParameter TestBP2CppParameterDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCpp2CppParameter TestBP2BPParameterDelegate;
 
 public:
 	UPROPERTY(BlueprintReadOnly)

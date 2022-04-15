@@ -5,7 +5,7 @@
 template <typename T>
 struct TSGIsEnum
 {
-	enum { Value = TAndValue<TIsEnum<T>::Value, UE4IsEnumClass_Private::TIsEnumConvertibleToInt<T>>::Value };
+	enum { Value = TAndValue<TIsEnum<T>::Value, UE::Core::Private::IsEnumClass::TIsEnumConvertibleToInt<T>>::Value };
 };
 
 template <typename T>

@@ -16,13 +16,13 @@ FSGMessageTracer::FSGMessageTracer()
 	, Running(false)
 {
 	ContinueEvent = FPlatformProcess::GetSynchEventFromPool();
-	TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSGMessageTracer::Tick), 0.0f);
+	TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSGMessageTracer::Tick), 0.0f);
 }
 
 
 FSGMessageTracer::~FSGMessageTracer()
 {
-	FTicker::GetCoreTicker().RemoveTicker(TickDelegateHandle);
+	FTSTicker::GetCoreTicker().RemoveTicker(TickDelegateHandle);
 	FPlatformProcess::ReturnSynchEventToPool(ContinueEvent);
 	ContinueEvent = nullptr;
 }

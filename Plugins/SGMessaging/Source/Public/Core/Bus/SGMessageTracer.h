@@ -196,7 +196,7 @@ private:
 	bool Running;
 
 	/** Handle to the registered TickDelegate. */
-	FDelegateHandle TickDelegateHandle;
+	FTSTicker::FDelegateHandle TickDelegateHandle;
 
 	/** Holds the trace actions queue. */
 	TQueue<TFunction<void()>, EQueueMode::Mpsc> Traces;

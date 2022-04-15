@@ -123,3 +123,19 @@ void USGMessagingTestSubsystem::TestCpp2BPParameter()
 		TestCpp2BPParameterDelegate.Broadcast();
 	}
 }
+
+void USGMessagingTestSubsystem::TestBP2CppParameter()
+{
+	if (TestBP2CppParameterDelegate.IsBound())
+	{
+		TestBP2CppParameterDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBP2BPParameter()
+{
+	if (TestBP2BPParameterDelegate.IsBound())
+	{
+		TestBP2BPParameterDelegate.Broadcast();
+	}
+}

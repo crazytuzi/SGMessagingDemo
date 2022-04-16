@@ -43,6 +43,7 @@ struct FSGTestUStructCase
 	{
 	}
 
+	UPROPERTY(BlueprintReadOnly)
 	int32 Int32Val;
 };
 
@@ -75,7 +76,7 @@ public:
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class SGMESSAGINGDEMO_API USGTestParameterCase : public UObject, public ISGTestInterfaceCase
 {
 	GENERATED_BODY()
@@ -83,15 +84,21 @@ class SGMESSAGINGDEMO_API USGTestParameterCase : public UObject, public ISGTestI
 public:
 	void Initialize();
 
-	// MulticastInlineDelegate,
-	// MulticastSparseDelegate
-
 public:
 	UFUNCTION(BlueprintCallable)
 	bool IsEqualTMap(const TMap<int, int>& InMap);
 
 	UFUNCTION(BlueprintCallable)
 	bool IsEqualTSet(const TSet<int>& InSet);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsEqualTSoftObjectPtr(const TSoftObjectPtr<USGTestParameterCase>& InTSoftObjectPtr);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsEqualTSoftClassPtr(const TSoftClassPtr<USGTestParameterCase>& InTSoftClassPtr);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsEqualTScriptInterface(const TScriptInterface<ISGTestInterfaceCase>& InTScriptInterface);
 
 public:
 	UPROPERTY(BlueprintReadOnly)
@@ -192,11 +199,12 @@ public:
 	FString UObjectKey = "UObject";
 
 	UPROPERTY(BlueprintReadOnly)
-	UObject* UObjectValue;
+	USGTestParameterCase* UObjectValue;
 
 	UPROPERTY(BlueprintReadOnly)
 	FString TObjectPtrKey = "TObjectPtr";
 
+	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<USGTestParameterCase> TObjectPtrValue;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -212,11 +220,13 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	FString TSoftObjectPtrKey = "TSoftObjectPtr";
 
+	UPROPERTY(BlueprintReadOnly)
 	TSoftObjectPtr<USGTestParameterCase> TSoftObjectPtrValue;
 
 	UPROPERTY(BlueprintReadOnly)
 	FString TSoftClassPtrKey = "TSoftClassPtr";
 
+	UPROPERTY(BlueprintReadOnly)
 	TSoftClassPtr<USGTestParameterCase> TSoftClassPtrValue;
 
 	UPROPERTY(BlueprintReadOnly)

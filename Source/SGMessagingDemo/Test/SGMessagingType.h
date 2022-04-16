@@ -107,4 +107,5 @@ UENUM(BlueprintType)
 enum ETopicParameter_MessageID
 {
 	TopicParameter_Cpp2Cpp_Publish,
+	TopicParameter_BP2BP_Publish,
 };

@@ -35,6 +35,16 @@ public:
 		return Params.Find(Key)->Cast<T>();
 	}
 
+	FSGAnyType GetType(const FString& Key) const
+	{
+		if (Params.Contains(Key))
+		{
+			return Params.Find(Key)->GetType();
+		}
+
+		return FSGAnyType();
+	}
+
 	template <typename T>
 	void Set(const FString& Key, T&& Value)
 	{

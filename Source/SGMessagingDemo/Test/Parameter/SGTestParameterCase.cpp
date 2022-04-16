@@ -120,3 +120,18 @@ bool USGTestParameterCase::IsEqualTSet(const TSet<int>& InSet)
 
 	return true;
 }
+
+bool USGTestParameterCase::IsEqualTSoftObjectPtr(const TSoftObjectPtr<USGTestParameterCase>& InTSoftObjectPtr)
+{
+	return TSoftObjectPtrValue == InTSoftObjectPtr;
+}
+
+bool USGTestParameterCase::IsEqualTSoftClassPtr(const TSoftClassPtr<USGTestParameterCase>& InTSoftClassPtr)
+{
+	return TSoftClassPtrValue == InTSoftClassPtr;
+}
+
+bool USGTestParameterCase::IsEqualTScriptInterface(const TScriptInterface<ISGTestInterfaceCase>& InTScriptInterface)
+{
+	return TScriptInterfaceValue == InTScriptInterface;
+}

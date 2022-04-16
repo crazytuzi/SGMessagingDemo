@@ -28,6 +28,11 @@ struct FSGAny
 		return Pointer.IsValid();
 	}
 
+	FSGAnyType GetType() const
+	{
+		return AnyType;
+	}
+
 	template <class T>
 	bool IsA() const
 	{

@@ -94,10 +94,9 @@ FSGBlueprintMessage USGMessageFunctionLibrary::ExecSet(const FSGBlueprintMessage
 		}
 		ELSE_SET_MESSAGE_FIELD(BoolProperty, bool)
 		ELSE_SET_MESSAGE_FIELD(ObjectProperty, UObject*)
-		ELSE_SET_MESSAGE_FIELD(WeakObjectProperty, TWeakObjectPtr<UObject>)
 		ELSE_SET_MESSAGE_FIELD(LazyObjectProperty, TLazyObjectPtr<UObject>)
 		ELSE_SET_MESSAGE_FIELD(SoftObjectProperty, TSoftObjectPtr<UObject>)
-		ELSE_SET_MESSAGE_FIELD(InterfaceProperty, UInterface*)
+		ELSE_SET_MESSAGE_FIELD(InterfaceProperty, TScriptInterface<IInterface>)
 		ELSE_SET_MESSAGE_FIELD(NameProperty, FName)
 		ELSE_SET_MESSAGE_FIELD(StrProperty, FString)
 		ELSE_SET_MESSAGE_FIELD(TextProperty, FText)
@@ -165,14 +164,29 @@ FSGBlueprintMessage USGMessageFunctionLibrary::ExecGet(const FSGBlueprintMessage
 		ELSE_GET_MESSAGE_FIELD(UInt32Property, uint32)
 		COMPLETE_ELSE_GET_MESSAGE_FIELD(UInt64PropertyPointer, FUInt64Property, uint64)
 		ELSE_GET_MESSAGE_FIELD(FloatProperty, float)
-		ELSE_GET_MESSAGE_FIELD(DoubleProperty, double)
+		else if (const auto DoubleProperty = CastField<FDoubleProperty>(InProperty))
+		{
+			auto Type = Message.Message->GetType(UKismetStringLibrary::Conv_NameToString(Key));
+
+			double Value;
+
+			if (Type == ESGAnyTypes::Float)
+			{
+				Value = static_cast<double>(Message.Message->Get<float>(UKismetStringLibrary::Conv_NameToString(Key)));
+			}
+			else if (Type == ESGAnyTypes::Double)
+			{
+				Value = Message.Message->Get<double>(UKismetStringLibrary::Conv_NameToString(Key));
+			}
+
+			DoubleProperty->CopySingleValue(PropertyAddress, &Value);
+		}
 		ELSE_GET_MESSAGE_FIELD(EnumProperty, int64)
 		ELSE_GET_MESSAGE_FIELD(BoolProperty, bool)
 		ELSE_GET_MESSAGE_FIELD(ObjectProperty, UObject*)
-		ELSE_GET_MESSAGE_FIELD(WeakObjectProperty, TWeakObjectPtr<UObject>)
 		ELSE_GET_MESSAGE_FIELD(LazyObjectProperty, TLazyObjectPtr<UObject>)
 		ELSE_GET_MESSAGE_FIELD(SoftObjectProperty, TSoftObjectPtr<UObject>)
-		ELSE_GET_MESSAGE_FIELD(InterfaceProperty, UInterface*)
+		ELSE_GET_MESSAGE_FIELD(InterfaceProperty, TScriptInterface<IInterface>)
 		ELSE_GET_MESSAGE_FIELD(NameProperty, FName)
 		ELSE_GET_MESSAGE_FIELD(StrProperty, FString)
 		ELSE_GET_MESSAGE_FIELD(TextProperty, FText)

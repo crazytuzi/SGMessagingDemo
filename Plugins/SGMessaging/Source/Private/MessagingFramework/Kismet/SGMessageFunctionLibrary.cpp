@@ -14,14 +14,23 @@
 		Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key),Value); \
 	}
 
+#define ELSE_COMPLETE_SET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
+	else COMPLETE_SET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType )
+
 #define SET_MESSAGE_FIELD( PropertyName, ValueType ) \
 	COMPLETE_SET_MESSAGE_FIELD( PropertyName, F##PropertyName, ValueType )
 
 #define ELSE_SET_MESSAGE_FIELD( PropertyName, ValueType ) \
 	else SET_MESSAGE_FIELD( PropertyName, ValueType )
 
-#define COMPLETE_ELSE_SET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
-	else COMPLETE_SET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType )
+#define CUSTOMIZE_SET_MESSAGE_FIELD( PropertyName ) \
+	if (const auto PropertyName = CastField<F##PropertyName>(InProperty)) \
+	{ \
+		Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
+	}
+
+#define ELSE_CUSTOMIZE_SET_MESSAGE_FIELD( PropertyName ) \
+	else CUSTOMIZE_SET_MESSAGE_FIELD( PropertyName )
 
 #define COMPLETE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
 	if(const auto PropertyName = CastField<PropertyType>(InProperty)) \
@@ -30,14 +39,23 @@
 		PropertyName->CopySingleValue(PropertyAddress,&Value); \
 	}
 
+#define ELSE_COMPLETE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
+	else COMPLETE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType )
+
 #define GET_MESSAGE_FIELD( PropertyName, ValueType ) \
 	COMPLETE_GET_MESSAGE_FIELD( PropertyName, F##PropertyName, ValueType )
 
 #define ELSE_GET_MESSAGE_FIELD( PropertyName, ValueType ) \
 	else GET_MESSAGE_FIELD( PropertyName, ValueType )
 
-#define COMPLETE_ELSE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
-	else COMPLETE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType )
+#define CUSTOMIZE_GET_MESSAGE_FIELD( PropertyName ) \
+	if (const auto PropertyName = CastField<F##PropertyName>(InProperty)) \
+	{ \
+		Message.Message->Get(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
+	}
+
+#define ELSE_CUSTOMIZE_GET_MESSAGE_FIELD( PropertyName ) \
+	else CUSTOMIZE_GET_MESSAGE_FIELD( PropertyName )
 
 USGBlueprintMessageBus* USGMessageFunctionLibrary::GetDefaultBus(UObject* WorldContextObject)
 {
@@ -81,69 +99,28 @@ FSGBlueprintMessage USGMessageFunctionLibrary::ExecSet(const FSGBlueprintMessage
 		ELSE_SET_MESSAGE_FIELD(Int16Property, int16)
 		ELSE_SET_MESSAGE_FIELD(IntProperty, int32)
 		ELSE_SET_MESSAGE_FIELD(Int64Property, int64)
-		COMPLETE_ELSE_SET_MESSAGE_FIELD(UInt16PropertyPointer, FUInt16Property, uint16)
+		ELSE_COMPLETE_SET_MESSAGE_FIELD(UInt16PropertyPointer, FUInt16Property, uint16)
 		ELSE_SET_MESSAGE_FIELD(UInt32Property, uint32)
-		COMPLETE_ELSE_SET_MESSAGE_FIELD(UInt64PropertyPointer, FUInt64Property, uint64)
+		ELSE_COMPLETE_SET_MESSAGE_FIELD(UInt64PropertyPointer, FUInt64Property, uint64)
 		ELSE_SET_MESSAGE_FIELD(FloatProperty, float)
 		ELSE_SET_MESSAGE_FIELD(DoubleProperty, double)
-		else if (const auto EnumProperty = CastField<FEnumProperty>(InProperty))
-		{
-			auto Value = EnumProperty->GetUnderlyingProperty()->GetSignedIntPropertyValue(PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(EnumProperty)
 		ELSE_SET_MESSAGE_FIELD(BoolProperty, bool)
+		ELSE_SET_MESSAGE_FIELD(ClassProperty, UClass*)
 		ELSE_SET_MESSAGE_FIELD(ObjectProperty, UObject*)
 		ELSE_SET_MESSAGE_FIELD(LazyObjectProperty, TLazyObjectPtr<UObject>)
+		ELSE_SET_MESSAGE_FIELD(SoftClassProperty, TSoftClassPtr<UObject>)
 		ELSE_SET_MESSAGE_FIELD(SoftObjectProperty, TSoftObjectPtr<UObject>)
 		ELSE_SET_MESSAGE_FIELD(InterfaceProperty, TScriptInterface<IInterface>)
 		ELSE_SET_MESSAGE_FIELD(NameProperty, FName)
 		ELSE_SET_MESSAGE_FIELD(StrProperty, FString)
 		ELSE_SET_MESSAGE_FIELD(TextProperty, FText)
-		else if (const auto ArrayProperty = CastField<FArrayProperty>(InProperty))
-		{
-			auto Value = FScriptArrayHelper(ArrayProperty, PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
-		else if (const auto MapProperty = CastField<FMapProperty>(InProperty))
-		{
-			auto Value = FScriptMapHelper(MapProperty, PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
-		else if (const auto SetProperty = CastField<FSetProperty>(InProperty))
-		{
-			auto Value = FScriptSetHelper(SetProperty, PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
-		else if (const auto StructProperty = CastField<FStructProperty>(InProperty))
-		{
-			auto Struct = StructProperty->Struct;
-
-			auto Size = Struct->GetStructureSize() ? Struct->GetStructureSize() : 1;
-
-			auto Value = FMemory::Malloc(Size);
-
-			Struct->InitializeStruct(Value);
-
-			Struct->CopyScriptStruct(Value, PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
-		else if (const auto MulticastInlineDelegateProperty = CastField<FMulticastInlineDelegateProperty>(InProperty))
-		{
-			auto Value = MulticastInlineDelegateProperty->GetPropertyValuePtr(PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
-		else if (const auto MulticastSparseDelegateProperty = CastField<FMulticastSparseDelegateProperty>(InProperty))
-		{
-			auto Value = MulticastSparseDelegateProperty->GetPropertyValuePtr(PropertyAddress);
-
-			Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), Value);
-		}
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(ArrayProperty)
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(MapProperty)
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(SetProperty)
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(StructProperty)
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(MulticastInlineDelegateProperty)
+		ELSE_CUSTOMIZE_SET_MESSAGE_FIELD(MulticastSparseDelegateProperty)
 	}
 
 	return Message;
@@ -160,99 +137,26 @@ FSGBlueprintMessage USGMessageFunctionLibrary::ExecGet(const FSGBlueprintMessage
 		ELSE_GET_MESSAGE_FIELD(Int16Property, int16)
 		ELSE_GET_MESSAGE_FIELD(IntProperty, int32)
 		ELSE_GET_MESSAGE_FIELD(Int64Property, int64)
-		COMPLETE_ELSE_GET_MESSAGE_FIELD(UInt16PropertyPointer, FUInt16Property, uint16)
+		ELSE_COMPLETE_GET_MESSAGE_FIELD(UInt16PropertyPointer, FUInt16Property, uint16)
 		ELSE_GET_MESSAGE_FIELD(UInt32Property, uint32)
-		COMPLETE_ELSE_GET_MESSAGE_FIELD(UInt64PropertyPointer, FUInt64Property, uint64)
+		ELSE_COMPLETE_GET_MESSAGE_FIELD(UInt64PropertyPointer, FUInt64Property, uint64)
 		ELSE_GET_MESSAGE_FIELD(FloatProperty, float)
-		else if (const auto DoubleProperty = CastField<FDoubleProperty>(InProperty))
-		{
-			auto Type = Message.Message->GetType(UKismetStringLibrary::Conv_NameToString(Key));
-
-			double Value;
-
-			if (Type == ESGAnyTypes::Float)
-			{
-				Value = static_cast<double>(Message.Message->Get<float>(UKismetStringLibrary::Conv_NameToString(Key)));
-			}
-			else if (Type == ESGAnyTypes::Double)
-			{
-				Value = Message.Message->Get<double>(UKismetStringLibrary::Conv_NameToString(Key));
-			}
-
-			DoubleProperty->CopySingleValue(PropertyAddress, &Value);
-		}
+		ELSE_GET_MESSAGE_FIELD(DoubleProperty, double)
 		ELSE_GET_MESSAGE_FIELD(EnumProperty, int64)
 		ELSE_GET_MESSAGE_FIELD(BoolProperty, bool)
+		ELSE_GET_MESSAGE_FIELD(ClassProperty, UClass*)
 		ELSE_GET_MESSAGE_FIELD(ObjectProperty, UObject*)
 		ELSE_GET_MESSAGE_FIELD(LazyObjectProperty, TLazyObjectPtr<UObject>)
+		ELSE_GET_MESSAGE_FIELD(SoftClassProperty, TSoftClassPtr<UObject>)
 		ELSE_GET_MESSAGE_FIELD(SoftObjectProperty, TSoftObjectPtr<UObject>)
 		ELSE_GET_MESSAGE_FIELD(InterfaceProperty, TScriptInterface<IInterface>)
 		ELSE_GET_MESSAGE_FIELD(NameProperty, FName)
 		ELSE_GET_MESSAGE_FIELD(StrProperty, FString)
 		ELSE_GET_MESSAGE_FIELD(TextProperty, FText)
-		else if (const auto ArrayProperty = CastField<FArrayProperty>(InProperty))
-		{
-			auto SrcHelper = Message.Message->Get<FScriptArrayHelper>(UKismetStringLibrary::Conv_NameToString(Key));
-
-			auto Inner = ArrayProperty->Inner;
-
-			auto DestHelper = FScriptArrayHelper::CreateHelperFormInnerProperty(Inner, PropertyAddress);
-
-			DestHelper.Resize(SrcHelper.Num());
-
-			auto Dest = DestHelper.GetRawPtr();
-
-			auto Src = SrcHelper.GetRawPtr();
-
-			for (auto i = 0; i < SrcHelper.Num(); ++i)
-			{
-				Inner->CopySingleValue(Dest, Src);
-
-				Dest += Inner->ElementSize;
-
-				Src += Inner->ElementSize;
-			}
-		}
-		else if (const auto MapProperty = CastField<FMapProperty>(InProperty))
-		{
-			auto SrcHelper = Message.Message->Get<FScriptMapHelper>(UKismetStringLibrary::Conv_NameToString(Key));
-
-			auto DestHelper = FScriptMapHelper::CreateHelperFormInnerProperties(
-				MapProperty->KeyProp, MapProperty->ValueProp, PropertyAddress);
-
-			for (auto i = 0; i < SrcHelper.GetMaxIndex(); ++i)
-			{
-				if (SrcHelper.IsValidIndex(i))
-				{
-					DestHelper.AddPair(SrcHelper.GetKeyPtr(i), SrcHelper.GetValuePtr(i));
-				}
-			}
-		}
-		else if (const auto SetProperty = CastField<FSetProperty>(InProperty))
-		{
-			auto SrcHelper = Message.Message->Get<FScriptSetHelper>(UKismetStringLibrary::Conv_NameToString(Key));
-
-			auto DestHelper = FScriptSetHelper::CreateHelperFormElementProperty(
-				SetProperty->ElementProp, PropertyAddress);
-
-			DestHelper.EmptyElements(SrcHelper.Num());
-
-			for (auto i = 0; i < SrcHelper.GetMaxIndex(); ++i)
-			{
-				if (SrcHelper.IsValidIndex(i))
-				{
-					DestHelper.AddElement(SrcHelper.GetElementPtr(i));
-				}
-			}
-		}
-		else if (const auto StructProperty = CastField<FStructProperty>(InProperty))
-		{
-			auto Value = Message.Message->Get<void*>(UKismetStringLibrary::Conv_NameToString(Key));
-
-			auto Struct = StructProperty->Struct;
-
-			Struct->CopyScriptStruct(PropertyAddress, Value);
-		}
+		ELSE_CUSTOMIZE_GET_MESSAGE_FIELD(ArrayProperty)
+		ELSE_CUSTOMIZE_GET_MESSAGE_FIELD(MapProperty)
+		ELSE_CUSTOMIZE_GET_MESSAGE_FIELD(SetProperty)
+		ELSE_CUSTOMIZE_GET_MESSAGE_FIELD(StructProperty)
 		ELSE_GET_MESSAGE_FIELD(MulticastInlineDelegateProperty, FMulticastScriptDelegate*)
 		ELSE_GET_MESSAGE_FIELD(MulticastSparseDelegateProperty, FSparseDelegate*)
 	}

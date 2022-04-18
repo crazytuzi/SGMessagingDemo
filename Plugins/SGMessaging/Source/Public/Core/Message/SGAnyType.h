@@ -34,8 +34,11 @@ enum class ESGAnyTypes : int32
 	FString,
 	FText,
 	TArray,
+	FScriptArray,
 	TMap,
+	FScriptMap,
 	TSet,
+	FScriptSet,
 	UStruct,
 	UStructPtr,
 	FMulticastInlineDelegate,
@@ -299,6 +302,12 @@ struct TSGAnyTraits<TArray<T>>
 	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TArray; }
 };
 
+template <typename T>
+struct TSGAnyTraits<FScriptArrayHelper, T>
+{
+	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptArray; }
+};
+
 template <typename K, typename V>
 struct TSGAnyTraits<TMap<K, V>>
 {
@@ -306,9 +315,21 @@ struct TSGAnyTraits<TMap<K, V>>
 };
 
 template <typename T>
+struct TSGAnyTraits<FScriptMapHelper, T>
+{
+	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptMap; }
+};
+
+template <typename T>
 struct TSGAnyTraits<TSet<T>>
 {
 	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TSet; }
+};
+
+template <typename T>
+struct TSGAnyTraits<FScriptSetHelper, T>
+{
+	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptSet; }
 };
 
 template <typename T>

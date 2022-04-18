@@ -71,7 +71,9 @@ void USGTestParameterCase::Initialize()
 
 	CharValue = "Char";
 
+#if defined(_MSC_VER)
 	AnsicharValue = "Ansichar";
+#endif
 
 	ClassValue = 1;
 

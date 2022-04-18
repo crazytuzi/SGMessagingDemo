@@ -34,9 +34,9 @@ struct TSGAnyProperty : FSGAnyProperty
 	{
 		if (const auto Value = Params.Find(Key))
 		{
-			ensure(Value->IsA<T>());
+			ensure(Value->template IsA<T>());
 
-			return Value->Cast<T>();
+			return Value->template Cast<T>();
 		}
 
 		return T();
@@ -59,7 +59,7 @@ struct TSGAnyProperty<uint8, T> : FSGAnyProperty
 		{
 			ensure(Value->GetType() == ESGAnyTypes::UInt8 || Value->GetType() == ESGAnyTypes::TEnumAsByte);
 
-			return Value->Cast<uint8>();
+			return Value->template Cast<uint8>();
 		}
 
 		return uint8();
@@ -87,7 +87,7 @@ struct TSGAnyProperty<int64, T> : FSGAnyProperty
 		{
 			ensure(Value->GetType() == ESGAnyTypes::Int64 || Value->GetType() == ESGAnyTypes::EnumClass);
 
-			return Value->Cast<int64>();
+			return Value->template Cast<int64>();
 		}
 
 		return int64();
@@ -110,7 +110,9 @@ struct TSGAnyProperty<double, T> : FSGAnyProperty
 		{
 			ensure(Value->GetType() == ESGAnyTypes::Double || Value->GetType() == ESGAnyTypes::Float);
 
-			return Value->GetType() == ESGAnyTypes::Double ? Value->Cast<double>() : Value->Cast<float>();
+			return Value->GetType() == ESGAnyTypes::Double
+				       ? Value->template Cast<double>()
+				       : Value->template Cast<float>();
 		}
 
 		return double();
@@ -133,7 +135,9 @@ struct TSGAnyProperty<T, typename TEnableIf<TSGIsEnumClass<T>::Value>::type> : F
 		{
 			ensure(Value->GetType() == ESGAnyTypes::EnumClass || Value->GetType() == ESGAnyTypes::Int64);
 
-			return Value->GetType() == ESGAnyTypes::EnumClass ? Value->Cast<T>() : static_cast<T>(Value->Cast<int64>());
+			return Value->GetType() == ESGAnyTypes::EnumClass
+				       ? Value->template Cast<T>()
+				       : static_cast<T>(Value->template Cast<int64>());
 		}
 
 		return T();
@@ -157,8 +161,8 @@ struct TSGAnyProperty<TSubclassOf<T>> : FSGAnyProperty
 			ensure(Value->GetType() == ESGAnyTypes::TSubclassOf || Value->GetType() == ESGAnyTypes::UObject);
 
 			return Value->GetType() == ESGAnyTypes::TSubclassOf
-				       ? Value->Cast<TSubclassOf<T>>()
-				       : TSubclassOf<T>(Value->Cast<T*>()->StaticClass());
+				       ? Value->template Cast<TSubclassOf<T>>()
+				       : TSubclassOf<T>(Value->template Cast<T*>()->StaticClass());
 		}
 
 		return TSubclassOf<T>();
@@ -183,7 +187,7 @@ struct TSGAnyProperty<T*, typename TEnableIf<TSGIsUObject<T>::Value>::Type> : FS
 				Value->GetType() == ESGAnyTypes::UObject || Value->GetType() == ESGAnyTypes::TSubclassOf || Value->
 				GetType() == ESGAnyTypes::TObjectPtr);
 
-			return Value->Cast<T*>();
+			return Value->template Cast<T*>();
 		}
 
 		return nullptr;
@@ -207,8 +211,8 @@ struct TSGAnyProperty<TObjectPtr<T>> : FSGAnyProperty
 			ensure(Value->GetType() == ESGAnyTypes::TObjectPtr || Value->GetType() == ESGAnyTypes::UObject);
 
 			return Value->GetType() == ESGAnyTypes::TObjectPtr
-				       ? Value->Cast<TObjectPtr<T>>()
-				       : TObjectPtr<T>(Value->Cast<T*>());
+				       ? Value->template Cast<TObjectPtr<T>>()
+				       : TObjectPtr<T>(Value->template Cast<T*>());
 		}
 
 		return TObjectPtr<T>();
@@ -237,12 +241,12 @@ struct TSGAnyProperty<TArray<T>> : FSGAnyProperty
 
 			if (Value->GetType() == ESGAnyTypes::TArray)
 			{
-				return Value->Cast<TArray<T>>();
+				return Value->template Cast<TArray<T>>();
 			}
 
 			if (Value->GetType() == ESGAnyTypes::FScriptArray)
 			{
-				auto ScriptArrayHelper = Value->Cast<FScriptArrayHelper>();
+				auto ScriptArrayHelper = Value->template Cast<FScriptArrayHelper>();
 
 				TArray<T> ScriptArray;
 
@@ -281,7 +285,7 @@ struct TSGAnyProperty<FScriptArrayHelper, T> : FSGAnyProperty
 			ensure(Value->GetType() == ESGAnyTypes::FScriptArray|| Value->GetType() == ESGAnyTypes::TArray);
 
 			auto SrcHelper = Value->GetType() == ESGAnyTypes::FScriptArray
-				                 ? Value->Cast<FScriptArrayHelper>()
+				                 ? Value->template Cast<FScriptArrayHelper>()
 				                 : FScriptArrayHelper::CreateHelperFormInnerProperty(
 					                 ArrayProperty->Inner, Value->ScriptArray);
 
@@ -329,14 +333,14 @@ struct TSGAnyProperty<TMap<K, V>> : FSGAnyProperty
 
 			if (Value->GetType() == ESGAnyTypes::TMap)
 			{
-				return Value->Cast<TMap<K, V>>();
+				return Value->template Cast<TMap<K, V>>();
 			}
 
 			if (Value->GetType() == ESGAnyTypes::FScriptMap)
 			{
 				TMap<K, V> ScriptMap;
 
-				auto ScriptMapHelper = Value->Cast<FScriptMapHelper>();
+				auto ScriptMapHelper = Value->template Cast<FScriptMapHelper>();
 
 				for (auto i = 0; i < ScriptMapHelper.GetMaxIndex(); ++i)
 				{
@@ -349,7 +353,7 @@ struct TSGAnyProperty<TMap<K, V>> : FSGAnyProperty
 				return MoveTemp(ScriptMap);
 			}
 
-			return Value->Cast<TMap<K, V>>();
+			return Value->template Cast<TMap<K, V>>();
 		}
 
 		return TMap<K, V>();
@@ -378,7 +382,7 @@ struct TSGAnyProperty<FScriptMapHelper, T> : FSGAnyProperty
 			ensure(Value->GetType() == ESGAnyTypes::FScriptMap || Value->GetType() == ESGAnyTypes::TMap);
 
 			auto SrcHelper = Value->GetType() == ESGAnyTypes::FScriptMap
-				                 ? Value->Cast<FScriptMapHelper>()
+				                 ? Value->template Cast<FScriptMapHelper>()
 				                 : FScriptMapHelper::CreateHelperFormInnerProperties(
 					                 MapProperty->KeyProp, MapProperty->ValueProp, Value->ScriptMap);
 
@@ -418,14 +422,14 @@ struct TSGAnyProperty<TSet<T>> : FSGAnyProperty
 
 			if (Value->GetType() == ESGAnyTypes::TSet)
 			{
-				return Value->Cast<TSet<T>>();
+				return Value->template Cast<TSet<T>>();
 			}
 
 			if (Value->GetType() == ESGAnyTypes::FScriptSet)
 			{
 				TSet<T> ScriptSet;
 
-				auto ScriptSetHelper = Value->Cast<FScriptSetHelper>();
+				auto ScriptSetHelper = Value->template Cast<FScriptSetHelper>();
 
 				for (auto i = 0; i < ScriptSetHelper.GetMaxIndex(); ++i)
 				{
@@ -465,7 +469,7 @@ struct TSGAnyProperty<FScriptSetHelper, T> : FSGAnyProperty
 			ensure(Value->GetType() == ESGAnyTypes::FScriptSet || Value->GetType() == ESGAnyTypes::TSet);
 
 			auto SrcHelper = Value->GetType() == ESGAnyTypes::FScriptSet
-				                 ? Value->Cast<FScriptSetHelper>()
+				                 ? Value->template Cast<FScriptSetHelper>()
 				                 : FScriptSetHelper::CreateHelperFormElementProperty(
 					                 SetProperty->ElementProp, Value->ScriptSet);
 
@@ -505,7 +509,9 @@ struct TSGAnyProperty<T, typename TEnableIf<TSGIsUStruct<T>::Value>::Type> : FSG
 		{
 			ensure(Value->GetType() == ESGAnyTypes::UStruct || Value->GetType() == ESGAnyTypes::Empty);
 
-			return Value->GetType() == ESGAnyTypes::UStruct ? Value->Cast<T>() : MoveTemp(*new(Value->Cast<void*>())T);
+			return Value->GetType() == ESGAnyTypes::UStruct
+				       ? Value->template Cast<T>()
+				       : MoveTemp(*new(Value->template Cast<void*>())T);
 		}
 
 		return T();
@@ -531,9 +537,9 @@ struct TSGAnyProperty<void*, T> : FSGAnyProperty
 	{
 		if (const auto Value = Params.Find(Key))
 		{
-			ensure(Value->IsA<void*>());
+			ensure(Value->template IsA<void*>());
 
-			return Value->Cast<void*>();
+			return Value->template Cast<void*>();
 		}
 
 		return nullptr;
@@ -551,7 +557,7 @@ struct TSGAnyProperty<void*, T> : FSGAnyProperty
 
 			Struct->CopyScriptStruct(PropertyAddress,
 			                         Value->GetType() == ESGAnyTypes::Empty
-				                         ? Value->Cast<void*>()
+				                         ? Value->template Cast<void*>()
 				                         : Value->ScriptStruct);
 		}
 	}
@@ -579,7 +585,7 @@ struct TSGAnyProperty<FMulticastScriptDelegate*, T> : FSGAnyProperty
 		{
 			ensure(Value->GetType() == ESGAnyTypes::FMulticastInlineDelegate);
 
-			return Value->Cast<FMulticastScriptDelegate*>();
+			return Value->template Cast<FMulticastScriptDelegate*>();
 		}
 
 		return nullptr;
@@ -608,7 +614,7 @@ struct TSGAnyProperty<FSparseDelegate*, T> : FSGAnyProperty
 		{
 			ensure(Value->GetType() == ESGAnyTypes::FMulticastSparseDelegate);
 
-			return Value->Cast<FSparseDelegate*>();
+			return Value->template Cast<FSparseDelegate*>();
 		}
 
 		return nullptr;

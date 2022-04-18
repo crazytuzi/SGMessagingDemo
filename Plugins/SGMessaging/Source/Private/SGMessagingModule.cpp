@@ -133,7 +133,7 @@ protected:
 		{
 			if (WeakBus.Value.IsValid())
 			{
-				check(!"Something is holding on a message bus");
+				ensureMsgf(!WeakBus.Value.IsValid(), TEXT("Something is holding on a message bus"));
 				break;
 			}
 		}

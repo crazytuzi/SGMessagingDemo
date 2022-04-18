@@ -27,34 +27,39 @@ struct FSGBlueprintMessageAddress
 };
 
 UENUM(BlueprintType)
-enum ESGBlueprintMessageFlags
+enum class ESGBlueprintMessageFlags:uint8
 {
 	/** No special flags */
 	None = 0,
 	/** ESGMessageFlags::None */
+
 	/** Guarantee that this message is delivered */
-	Reliable = ESGMessageFlags::Reliable,
+	Reliable = 1 << 0,
+	/** ESGMessageFlags::Reliable */
 };
 
 UENUM(BlueprintType)
-enum ESGBlueprintMessageScope
+enum class ESGBlueprintMessageScope:uint8
 {
 	/** Deliver to subscribers in the same thread. */
 	Thread = 0,
 	/** ESGMessageScope::Thread */
 
 	/** Deliver to subscribers in the same process. */
-	Process = ESGMessageScope::Process,
+	Process = 1,
+	/** ESGMessageScope::Process */
 
 	/** Deliver to subscribers on the network. */
-	Network = ESGMessageScope::Network,
+	Network = 2,
+	/** ESGMessageScope::Network */
 
 	/**
 	 * Deliver to all subscribers.
 	 *
 	 * Note: This must be the last value in this enumeration.
 	 */
-	All = ESGMessageScope::All,
+	All = 3,
+	/** ESGMessageScope::All */
 };
 
 USTRUCT(BlueprintType)

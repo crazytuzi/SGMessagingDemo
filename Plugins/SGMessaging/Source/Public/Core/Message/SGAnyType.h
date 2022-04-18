@@ -136,10 +136,7 @@ private:
 template <typename T, typename Enable = void>
 struct TSGAnyTraits
 {
-	static CONSTEXPR FSGAnyType GetType()
-	{
-		return ESGAnyTypes::Empty;
-	}
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Empty; }
 };
 
 
@@ -149,221 +146,221 @@ struct TSGAnyTraits
 template <typename T>
 struct TSGAnyTraits<int8, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Int8; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Int8; }
 };
 
 template <typename T>
 struct TSGAnyTraits<uint8, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UInt8; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UInt8; }
 };
 
 template <typename T>
 struct TSGAnyTraits<int16, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Int16; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Int16; }
 };
 
 template <typename T>
 struct TSGAnyTraits<uint16, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UInt16; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UInt16; }
 };
 
 template <typename T>
 struct TSGAnyTraits<int32, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Int32; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Int32; }
 };
 
 template <typename T>
 struct TSGAnyTraits<uint32, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UInt32; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UInt32; }
 };
 
 template <typename T>
 struct TSGAnyTraits<int64, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Int64; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Int64; }
 };
 
 template <typename T>
 struct TSGAnyTraits<uint64, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UInt64; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UInt64; }
 };
 
 template <typename T>
 struct TSGAnyTraits<float, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Float; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Float; }
 };
 
 template <typename T>
 struct TSGAnyTraits<double, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Double; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Double; }
 };
 
 template <typename T>
 struct TSGAnyTraits<T, typename TEnableIf<TSGIsEnum<T>::Value>::type>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Enum; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Enum; }
 };
 
 template <typename T>
 struct TSGAnyTraits<T, typename TEnableIf<TSGIsEnumClass<T>::Value>::type>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::EnumClass; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::EnumClass; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TEnumAsByte<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TEnumAsByte; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TEnumAsByte; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TSubclassOf<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TSubclassOf; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TSubclassOf; }
 };
 
 template <typename T>
 struct TSGAnyTraits<bool, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Bool; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Bool; }
 };
 
 template <typename T>
 struct TSGAnyTraits<T*, typename TEnableIf<TSGIsUObject<T>::Value>::Type>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UObject; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UObject; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TObjectPtr<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TObjectPtr; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TObjectPtr; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TWeakObjectPtr<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TWeakObject; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TWeakObject; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TLazyObjectPtr<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TLazyObject; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TLazyObject; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TSoftObjectPtr<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TSoftObject; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TSoftObject; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TSoftClassPtr<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TSoftClass; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TSoftClass; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TScriptInterface<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TScriptInterface; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TScriptInterface; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FName, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FName; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FName; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FString, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FString; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FString; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FText, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FText; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FText; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TArray<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TArray; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TArray; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FScriptArrayHelper, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptArray; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FScriptArray; }
 };
 
 template <typename K, typename V>
 struct TSGAnyTraits<TMap<K, V>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TMap; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TMap; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FScriptMapHelper, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptMap; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FScriptMap; }
 };
 
 template <typename T>
 struct TSGAnyTraits<TSet<T>>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::TSet; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::TSet; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FScriptSetHelper, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FScriptSet; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FScriptSet; }
 };
 
 template <typename T>
 struct TSGAnyTraits<T, typename TEnableIf<TSGIsUStruct<T>::Value>::Type>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UStruct; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UStruct; }
 };
 
 template <typename T>
 struct TSGAnyTraits<T*, typename TEnableIf<TSGIsUStructPtr<T>::Value>::Type>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::UStructPtr; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::UStructPtr; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FMulticastScriptDelegate*, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FMulticastInlineDelegate; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FMulticastInlineDelegate; }
 };
 
 template <typename T>
 struct TSGAnyTraits<FSparseDelegate*, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::FMulticastSparseDelegate; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::FMulticastSparseDelegate; }
 };
 
 template <typename T>
 struct TSGAnyTraits<const char*, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Char; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Char; }
 };
 
 template <typename T>
 struct TSGAnyTraits<ANSICHAR*, T>
 {
-	static CONSTEXPR FSGAnyType GetType() { return ESGAnyTypes::Ansichar; }
+	static CONSTEXPR ESGAnyTypes GetType() { return ESGAnyTypes::Ansichar; }
 };

@@ -13,7 +13,7 @@ struct FSGBlueprintSendParameter
 	FSGBlueprintSendParameter() = default;
 
 	UPROPERTY(BlueprintReadWrite)
-	TEnumAsByte<ESGBlueprintMessageFlags> Flags;
+	ESGBlueprintMessageFlags Flags;
 
 	UPROPERTY(BlueprintReadWrite)
 	TMap<FName, FString> Annotations;
@@ -29,7 +29,7 @@ struct FSGBlueprintSendParameter
 	explicit operator FSGMessageParameter::FSendParameter() const
 	{
 		return FSGMessageParameter::FSendParameter(
-			static_cast<ESGMessageFlags>(Flags.GetValue()),
+			static_cast<ESGMessageFlags>(Flags),
 			Annotations,
 			Attachment,
 			Delay,
@@ -45,7 +45,7 @@ struct FSGBlueprintPublishParameter
 	FSGBlueprintPublishParameter() = default;
 
 	UPROPERTY(BlueprintReadWrite)
-	TEnumAsByte<ESGBlueprintMessageScope> Scope;
+	ESGBlueprintMessageScope Scope;
 
 	UPROPERTY(BlueprintReadWrite)
 	TMap<FName, FString> Annotations;
@@ -59,7 +59,7 @@ struct FSGBlueprintPublishParameter
 	explicit operator FSGMessageParameter::FPublishParameter() const
 	{
 		return FSGMessageParameter::FPublishParameter(
-			static_cast<ESGMessageScope>(Scope.GetValue()),
+			static_cast<ESGMessageScope>(Scope),
 			Annotations,
 			Delay,
 			Expiration);

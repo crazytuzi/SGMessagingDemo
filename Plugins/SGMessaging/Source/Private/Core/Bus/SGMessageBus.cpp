@@ -263,14 +263,14 @@ void FSGMessageBus::Unregister(const FSGMessageAddress& Address)
 }
 
 
-void FSGMessageBus::Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType)
+void FSGMessageBus::Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag)
 {
-	if (MessageType != NAME_None)
+	if (MessageTag != NAME_None)
 	{
-		if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeUnsubscription(Subscriber, MessageType))
+		if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeUnsubscription(Subscriber, MessageTag))
 		{
 			UE_LOG(LogSGMessaging, Verbose, TEXT("Unsubscribing %s"), *Subscriber->GetDebugName().ToString());
-			Router->RemoveSubscription(Subscriber, MessageType);
+			Router->RemoveSubscription(Subscriber, MessageTag);
 		}
 	}
 }

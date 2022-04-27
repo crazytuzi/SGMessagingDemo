@@ -62,7 +62,7 @@ public:
 	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType, const FSGMessageScopeRange& ScopeRange) override;
 	virtual void Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) override;
 	virtual void Unregister(const FSGMessageAddress& Address) override;
-	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType) override;
+	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag) override;
 
 	virtual void AddNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener) override;
 	virtual void RemoveNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener) override;

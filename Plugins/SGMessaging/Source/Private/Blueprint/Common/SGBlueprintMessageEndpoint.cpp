@@ -12,26 +12,18 @@ USGBlueprintMessageEndpoint::~USGBlueprintMessageEndpoint()
 	}
 }
 
-void USGBlueprintMessageEndpoint::Subscribe(const int32 InTopicID, const int32 InMessageID,
+void USGBlueprintMessageEndpoint::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
                                             const FSGBlueprintMessageDelegate& InDelegate)
 {
 	if (MessageEndpoint.IsValid())
 	{
-		MessageEndpoint->Subscribe(MESSAGE_TAG_PARAM_VALUE, TSGLambdaMessageHandler<FSGMessage>::FuncType(
-			                           [this, InDelegate](ISGMessage* Message,
-			                                              const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>&
-			                                              Context)
-			                           {
-				                           if (InDelegate.IsBound())
-				                           {
-					                           InDelegate.Execute(Message, Context);
-				                           }
-			                           }));
+		MessageEndpoint->Subscribe<FSGBlueprintMessage, FSGBlueprintMessageContext>(
+			MESSAGE_TAG_PARAM_VALUE, InDelegate.GetUObject(), InDelegate.GetFunctionName());
 	}
 }
 
-void USGBlueprintMessageEndpoint::Publish(const int32 InTopicID, const int32 InMessageID,
-                                          const FSGBlueprintPublishParameter InParameter,
+void USGBlueprintMessageEndpoint::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
+                                          const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
                                           const FSGBlueprintMessage InMessage)
 {
 	if (MessageEndpoint.IsValid())
@@ -41,9 +33,9 @@ void USGBlueprintMessageEndpoint::Publish(const int32 InTopicID, const int32 InM
 	}
 }
 
-void USGBlueprintMessageEndpoint::Send(const int32 InTopicID, const int32 InMessageID,
+void USGBlueprintMessageEndpoint::Send(MESSAGE_TAG_PARAM_SIGNATURE,
                                        const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                       const FSGBlueprintSendParameter InParameter,
+                                       const FSGBlueprintSendParameter MESSAGE_PARAMETER,
                                        const FSGBlueprintMessage InMessage)
 {
 	if (MessageEndpoint.IsValid())
@@ -78,6 +70,16 @@ void USGBlueprintMessageEndpoint::Forward(const FSGBlueprintMessageContext& InCo
 		}
 
 		MessageEndpoint->Forward(InContext, Recipients, InDelay);
+	}
+}
+
+void USGBlueprintMessageEndpoint::Unsubscribe(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate)
+{
+	if (MessageEndpoint.IsValid())
+	{
+		MessageEndpoint->Unsubscribe<FSGBlueprintMessage, FSGBlueprintMessageContext>(
+			MESSAGE_TAG_PARAM_VALUE, InDelegate.GetUObject(), InDelegate.GetFunctionName());
 	}
 }
 

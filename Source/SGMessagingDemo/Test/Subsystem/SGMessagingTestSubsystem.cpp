@@ -139,3 +139,35 @@ void USGMessagingTestSubsystem::TestBP2BPParameter()
 		TestBP2BPParameterDelegate.Broadcast();
 	}
 }
+
+void USGMessagingTestSubsystem::TestCppSubscribe()
+{
+	if (TestCppSubscribeDelegate.IsBound())
+	{
+		TestCppSubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestCppUnsubscribe()
+{
+	if (TestCppUnsubscribeDelegate.IsBound())
+	{
+		TestCppUnsubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBPSubscribe()
+{
+	if (TestBPSubscribeDelegate.IsBound())
+	{
+		TestBPSubscribeDelegate.Broadcast();
+	}
+}
+
+void USGMessagingTestSubsystem::TestBPUnsubscribe()
+{
+	if (TestBPUnsubscribeDelegate.IsBound())
+	{
+		TestBPUnsubscribeDelegate.Broadcast();
+	}
+}

@@ -11,7 +11,7 @@ struct FSGBlueprintMessage
 
 	FSGBlueprintMessage() = default;
 
-	FSGBlueprintMessage(ISGMessage* InMessage)
+	FSGBlueprintMessage(const void* InMessage)
 	{
 		if (InMessage == nullptr)
 		{
@@ -19,8 +19,18 @@ struct FSGBlueprintMessage
 		}
 		else
 		{
-			Message = static_cast<FSGMessage*>(InMessage);
+			Message = static_cast<FSGMessage*>(const_cast<void*>(InMessage));
 		}
+	}
+
+	FSGBlueprintMessage(const FSGMessage& InMessage): Message(&const_cast<FSGMessage&>(InMessage))
+	{
+	}
+
+public:
+	FSGMessage* GetMessage() const
+	{
+		return Message;
 	}
 
 	operator FSGMessage*() const
@@ -28,5 +38,6 @@ struct FSGBlueprintMessage
 		return Message;
 	}
 
+private:
 	FSGMessage* Message;
 };

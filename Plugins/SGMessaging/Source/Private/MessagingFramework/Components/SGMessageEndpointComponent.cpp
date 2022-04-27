@@ -33,33 +33,33 @@ void USGMessageEndpointComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	// ...
 }
 
-void USGMessageEndpointComponent::Subscribe(const int32 InTopicID, const int32 InMessageID,
+void USGMessageEndpointComponent::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
                                             const FSGBlueprintMessageDelegate& InDelegate)
 {
-	if (MessageEndpoint != nullptr)
+	if (IsValid(MessageEndpoint))
 	{
-		MessageEndpoint->Subscribe(InTopicID, InMessageID, InDelegate);
+		MessageEndpoint->Subscribe(MESSAGE_TAG_PARAM_VALUE, InDelegate);
 	}
 }
 
-void USGMessageEndpointComponent::Publish(const int32 InTopicID, const int32 InMessageID,
-                                          const FSGBlueprintPublishParameter InParameter,
+void USGMessageEndpointComponent::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
+                                          const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
                                           const FSGBlueprintMessage InMessage)
 {
-	if (MessageEndpoint != nullptr)
+	if (IsValid(MessageEndpoint))
 	{
-		MessageEndpoint->Publish(InTopicID, InMessageID, InParameter, InMessage);
+		MessageEndpoint->Publish(MESSAGE_TAG_PARAM_VALUE, MESSAGE_PARAMETER, InMessage);
 	}
 }
 
-void USGMessageEndpointComponent::Send(const int32 InTopicID, const int32 InMessageID,
+void USGMessageEndpointComponent::Send(MESSAGE_TAG_PARAM_SIGNATURE,
                                        const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                       const FSGBlueprintSendParameter InParameter,
+                                       const FSGBlueprintSendParameter MESSAGE_PARAMETER,
                                        const FSGBlueprintMessage InMessage)
 {
-	if (MessageEndpoint != nullptr)
+	if (IsValid(MessageEndpoint))
 	{
-		MessageEndpoint->Send(InTopicID, InMessageID, InRecipients, InParameter, InMessage);
+		MessageEndpoint->Send(MESSAGE_TAG_PARAM_VALUE, InRecipients, MESSAGE_PARAMETER, InMessage);
 	}
 }
 
@@ -67,15 +67,24 @@ void USGMessageEndpointComponent::Forward(const FSGBlueprintMessageContext& InCo
                                           const TArray<FSGBlueprintMessageAddress>& InRecipients,
                                           const FTimespan InDelay)
 {
-	if (MessageEndpoint != nullptr)
+	if (IsValid(MessageEndpoint))
 	{
 		MessageEndpoint->Forward(InContext, InRecipients, InDelay);
 	}
 }
 
+void USGMessageEndpointComponent::Unsubscribe(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
+{
+	if (IsValid(MessageEndpoint))
+	{
+		return MessageEndpoint->Unsubscribe(MESSAGE_TAG_PARAM_VALUE, InDelegate);
+	}
+}
+
 FSGBlueprintMessageAddress USGMessageEndpointComponent::GetAddress() const
 {
-	if (MessageEndpoint != nullptr)
+	if (IsValid(MessageEndpoint))
 	{
 		return MessageEndpoint->GetAddress();
 	}

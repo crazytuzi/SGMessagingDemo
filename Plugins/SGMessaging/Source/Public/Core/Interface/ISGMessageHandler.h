@@ -13,6 +13,7 @@ class ISGMessageContext;
 class ISGMessageHandler
 {
 public:
+	virtual uint32 GetHash() const = 0;
 
 	/**
 	 * Handles the specified message.

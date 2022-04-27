@@ -243,10 +243,10 @@ public:
 	 * Cancels the specified message subscription.
 	 *
 	 * @param Subscriber The subscriber wishing to stop receiving the messages.
-	 * @param MessageType The type of messages to unsubscribe from (NAME_All = all types).
+	 * @param MessageTag The type of messages to unsubscribe from (NAME_All = all types).
 	 * @see Subscribe
 	 */
-	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType) = 0;
+	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag) = 0;
 
 	/**
 	 * Add a listener to the bus notifications

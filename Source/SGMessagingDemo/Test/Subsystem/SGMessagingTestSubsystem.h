@@ -39,6 +39,14 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBP2CppParameter);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBP2BPParameter);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCppSubscribe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestCppUnsubscribe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBPSubscribe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestBPUnsubscribe);
+
 /**
  * 
  */
@@ -99,6 +107,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TestBP2BPParameter();
 
+	UFUNCTION(BlueprintCallable)
+	void TestCppSubscribe();
+
+	UFUNCTION(BlueprintCallable)
+	void TestCppUnsubscribe();
+
+	UFUNCTION(BlueprintCallable)
+	void TestBPSubscribe();
+
+	UFUNCTION(BlueprintCallable)
+	void TestBPUnsubscribe();
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FTestPublishSubscribe TestPublishSubscribeDelegate;
@@ -147,6 +167,18 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTestCpp2CppParameter TestBP2BPParameterDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCppSubscribe TestCppSubscribeDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestCppUnsubscribe TestCppUnsubscribeDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestBPSubscribe TestBPSubscribeDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FTestBPUnsubscribe TestBPUnsubscribeDelegate;
 
 public:
 	UPROPERTY(BlueprintReadOnly)

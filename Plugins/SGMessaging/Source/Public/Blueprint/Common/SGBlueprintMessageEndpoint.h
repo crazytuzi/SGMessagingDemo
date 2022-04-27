@@ -93,6 +93,19 @@ public:
 		}
 	}
 
+	UFUNCTION(BlueprintCallable)
+	void Unsubscribe(const int32 InTopicID, const int32 InMessageID, const FSGBlueprintMessageDelegate& InDelegate);
+
+	template <typename HandlerType>
+	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
+	                 typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	{
+		if (MessageEndpoint.IsValid())
+		{
+			MessageEndpoint->Unsubscribe(MESSAGE_TAG_PARAM_VALUE, Handler, HandlerFunc);
+		}
+	}
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	FSGBlueprintMessageAddress GetAddress() const;

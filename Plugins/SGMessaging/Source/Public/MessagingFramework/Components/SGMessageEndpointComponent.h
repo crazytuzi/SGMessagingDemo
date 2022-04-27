@@ -35,7 +35,7 @@ public:
 	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
 	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
 	{
-		if (MessageEndpoint != nullptr)
+		if (IsValid(MessageEndpoint))
 		{
 			MessageEndpoint->Subscribe(MESSAGE_TAG_PARAM_VALUE, Handler, HandlerFunc);
 		}
@@ -48,7 +48,7 @@ public:
 	template <typename ...Args>
 	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER_SIGNATURE, Args&&... Params)
 	{
-		if (MessageEndpoint != nullptr)
+		if (IsValid(MessageEndpoint))
 		{
 			MessageEndpoint->Publish(MESSAGE_TAG_PARAM_VALUE,MESSAGE_PARAMETER, Params...);
 		}
@@ -63,7 +63,7 @@ public:
 	          CONST_SEND_PARAMETER_SIGNATURE,
 	          Args&&... Params)
 	{
-		if (MessageEndpoint != nullptr)
+		if (IsValid(MessageEndpoint))
 		{
 			MessageEndpoint->Send(MESSAGE_TAG_PARAM_VALUE, InRecipients, MESSAGE_PARAMETER, Params...);
 		}
@@ -73,7 +73,7 @@ public:
 	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& InRecipient, CONST_SEND_PARAMETER_SIGNATURE,
 	          Args&&... Params)
 	{
-		if (MessageEndpoint != nullptr)
+		if (IsValid(MessageEndpoint))
 		{
 			MessageEndpoint->Send(MESSAGE_TAG_PARAM_VALUE, InRecipient, MESSAGE_PARAMETER, Params...);
 		}
@@ -86,9 +86,23 @@ public:
 	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& InContext,
 	             const TArray<FSGMessageAddress>& InRecipients, const FTimespan InDelay = FTimespan()) const
 	{
-		if (MessageEndpoint != nullptr)
+		if (IsValid(MessageEndpoint))
 		{
 			MessageEndpoint->Forward(InContext, InRecipients, InDelay);
+		}
+	}
+
+	UFUNCTION(BlueprintCallable)
+	void Unsubscribe(const int32 InTopicID, const int32 InMessageID,
+	                 const FSGBlueprintMessageDelegate& InDelegate) const;
+
+	template <typename HandlerType>
+	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
+	                 typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	{
+		if (IsValid(MessageEndpoint))
+		{
+			MessageEndpoint->Unsubscribe(MESSAGE_TAG_PARAM_VALUE, Handler, HandlerFunc);
 		}
 	}
 

@@ -20,7 +20,8 @@ enum ETopicID
 	Topic_BlueprintDelayPublishSubscribe,
 	Topic_BlueprintDelayRequestReply,
 	Topic_BlueprintDelayForwardReply,
-	Topic_Parameter
+	Topic_Parameter,
+	Topic_Unsubscribe
 };
 
 UENUM(BlueprintType)
@@ -110,4 +111,11 @@ enum ETopicParameter_MessageID
 	TopicParameter_Cpp2BP_Publish,
 	TopicParameter_BP2Cpp_Publish,
 	TopicParameter_BP2BP_Publish,
+};
+
+UENUM(BlueprintType)
+enum ETopicUnsubscribe_MessageID
+{
+	TopicUnsubscribe_Cpp,
+	TopicUnsubscribe_BP,
 };

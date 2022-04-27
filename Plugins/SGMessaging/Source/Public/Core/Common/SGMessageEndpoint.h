@@ -340,7 +340,7 @@ public:
 	{
 		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
 
-		if (Bus.IsValid())
+		if (Bus.IsValid() && HandlerMap.FindOrAdd(MessageType).IsEmpty())
 		{
 			Bus->Subscribe(AsShared(), MessageType, ScopeRange);
 		}
@@ -349,17 +349,62 @@ public:
 	/**
 	 * Unsubscribes this endpoint from the specified message type.
 	 *
-	 * @param MessageType The type of message to unsubscribe (NAME_All = all types).
+	 * @param MessageTag The type of message to unsubscribe (NAME_All = all types).
 	 * @see Subscribe
 	 */
-	void Unsubscribe(const FName& TopicPattern)
+	void Unsubscribe(const FName& MessageTag)
 	{
 		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
 
 		if (Bus.IsValid())
 		{
-			Bus->Unsubscribe(AsShared(), TopicPattern);
+			Bus->Unsubscribe(AsShared(), MessageTag);
 		}
+	}
+
+	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, const TSharedRef<ISGMessageHandler, ESPMode::ThreadSafe>& InHandler)
+	{
+		if (InHandler.IsUnique())
+		{
+			const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
+
+			if (auto Handlers = HandlerMap.Find(MessageTag))
+			{
+				for (const auto Handler : *Handlers)
+				{
+					if (Handler->GetHash() == InHandler->GetHash())
+					{
+						Handlers->Remove(Handler);
+
+						if (Handlers->IsEmpty())
+						{
+							HandlerMap.Remove(MessageTag);
+
+							Unsubscribe(MessageTag);
+						}
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	template <typename HandlerType>
+	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
+	                 typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	{
+		Unsubscribe(
+			MESSAGE_TAG_PARAM_VALUE,
+			MakeShareable(new TSGRawMessageHandler<FSGMessage, HandlerType>(Handler, MoveTemp(HandlerFunc))));
+	}
+
+	template <typename MessageType, typename ContextType>
+	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, const UObject* Object, const FName& FunctionName)
+	{
+		Unsubscribe(
+			MESSAGE_TAG_PARAM_VALUE,
+			MakeShareable(new TSGDelegateMessageHandler<MessageType, ContextType>(Object, FunctionName)));
 	}
 
 public:
@@ -970,27 +1015,19 @@ public:
 	{
 		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
 
+		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+
 		WithRawMessageHandler(MessageTag, Handler, HandlerFunc);
-
-		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
 	}
 
-	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const TSGFunctionMessageHandler<FSGMessage>::FuncType HandlerFunc)
+	template <typename MessageType, typename ContextType>
+	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const UObject* Object, const FName& FunctionName)
 	{
 		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
 
-		WithFunctionMessageHandler(MessageTag, HandlerFunc);
-
 		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
-	}
 
-	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const TSGLambdaMessageHandler<FSGMessage>::FuncType HandlerFunc)
-	{
-		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
-
-		WithLambdaMessageHandler(MessageTag, HandlerFunc);
-
-		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+		WithDelegateMessageHandler<MessageType, ContextType>(MessageTag, Object, FunctionName);
 	}
 
 	/**
@@ -1062,7 +1099,7 @@ protected:
 	 * This overload is used to register raw class member functions.
 	 *
 	 * @param HandlerType The type of the object handling the messages.
-	 * @param MessageType The type of messages to handle.
+	 * @param MessageTag The type of messages to handle.
 	 * @param Handler The class handling the messages.
 	 * @param HandlerFunc The class function handling the messages.
 	 * @return This instance (for method chaining).
@@ -1075,6 +1112,14 @@ protected:
 		WithHandler(
 			MessageTag,
 			MakeShareable(new TSGRawMessageHandler<FSGMessage, HandlerType>(Handler, MoveTemp(HandlerFunc))));
+	}
+
+	template <typename MessageType, typename ContextType>
+	void WithDelegateMessageHandler(const FName& MessageTag, const UObject* Object, const FName& FunctionName)
+	{
+		WithHandler(
+			MessageTag,
+			MakeShareable(new TSGDelegateMessageHandler<MessageType, ContextType>(Object, FunctionName)));
 	}
 
 	/**
@@ -1097,28 +1142,30 @@ protected:
 		WithHandler(MessageTag, MakeShareable(new TSGFunctionMessageHandler<FSGMessage>(MoveTemp(HandlerFunc))));
 	}
 
-	void WithLambdaMessageHandler(const FName& MessageTag,
-	                              TSGLambdaMessageHandler<FSGMessage>::FuncType HandlerFunc)
-	{
-		WithHandler(MessageTag, MakeShareable(new TSGLambdaMessageHandler<FSGMessage>(MoveTemp(HandlerFunc))));
-	}
-
 	/**
 	 * Registers a message handler with the endpoint.
 	 *
 	 * It is legal to configure multiple handlers for the same message type. Each
 	 * handler will be executed when a message of the specified type is received.
 	 *
-	 * @param MessageType
-	 * @param Handler The handler to add.
+	 * @param InMessageTag
+	 * @param InHandler The handler to add.
 	 * @return This instance (for method chaining).
 	 * @see Handling, WithCatchall
 	 */
-	void WithHandler(const FName& MessageTag, const TSharedRef<ISGMessageHandler, ESPMode::ThreadSafe>& Handler)
+	void WithHandler(const FName& InMessageTag, const TSharedRef<ISGMessageHandler, ESPMode::ThreadSafe>& InHandler)
 	{
-		auto& Handlers = HandlerMap.FindOrAdd(MessageTag);
+		auto& Handlers = HandlerMap.FindOrAdd(InMessageTag);
 
-		Handlers.Add(Handler);
+		for (const auto& Handler : Handlers)
+		{
+			if (Handler->GetHash() == InHandler->GetHash())
+			{
+				return;
+			}
+		}
+
+		Handlers.Add(InHandler);
 	}
 	
 	/**

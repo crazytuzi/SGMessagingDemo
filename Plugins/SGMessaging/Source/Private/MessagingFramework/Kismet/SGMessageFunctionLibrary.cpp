@@ -11,7 +11,7 @@
 	{ \
 		ValueType Value; \
 		PropertyName->CopySingleValue(&Value,PropertyAddress); \
-		Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key),Value); \
+		Message.GetMessage()->Set(UKismetStringLibrary::Conv_NameToString(Key),Value); \
 	}
 
 #define ELSE_COMPLETE_SET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
@@ -26,7 +26,7 @@
 #define CUSTOMIZE_SET_MESSAGE_FIELD( PropertyName ) \
 	if (const auto PropertyName = CastField<F##PropertyName>(InProperty)) \
 	{ \
-		Message.Message->Set(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
+		Message.GetMessage()->Set(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
 	}
 
 #define ELSE_CUSTOMIZE_SET_MESSAGE_FIELD( PropertyName ) \
@@ -35,7 +35,7 @@
 #define COMPLETE_GET_MESSAGE_FIELD( PropertyName, PropertyType, ValueType ) \
 	if(const auto PropertyName = CastField<PropertyType>(InProperty)) \
 	{ \
-		const auto Value = Message.Message->Get<ValueType>(UKismetStringLibrary::Conv_NameToString(Key)); \
+		const auto Value = Message.GetMessage()->Get<ValueType>(UKismetStringLibrary::Conv_NameToString(Key)); \
 		PropertyName->CopySingleValue(PropertyAddress,&Value); \
 	}
 
@@ -51,7 +51,7 @@
 #define CUSTOMIZE_GET_MESSAGE_FIELD( PropertyName ) \
 	if (const auto PropertyName = CastField<F##PropertyName>(InProperty)) \
 	{ \
-		Message.Message->Get(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
+		Message.GetMessage()->Get(UKismetStringLibrary::Conv_NameToString(Key), PropertyName, PropertyAddress); \
 	}
 
 #define ELSE_CUSTOMIZE_GET_MESSAGE_FIELD( PropertyName ) \
@@ -92,7 +92,7 @@ FSGBlueprintMessageAddress USGMessageFunctionLibrary::GetSender(const FSGBluepri
 FSGBlueprintMessage USGMessageFunctionLibrary::ExecSet(const FSGBlueprintMessage& Message, const FName& Key,
                                                        FProperty* InProperty, const void* PropertyAddress)
 {
-	if (Message.Message != nullptr && InProperty != nullptr)
+	if (Message.GetMessage() != nullptr && InProperty != nullptr)
 	{
 		SET_MESSAGE_FIELD(ByteProperty, uint8)
 		ELSE_SET_MESSAGE_FIELD(Int8Property, int8)
@@ -129,7 +129,7 @@ FSGBlueprintMessage USGMessageFunctionLibrary::ExecGet(const FSGBlueprintMessage
                                                        FProperty* InProperty,
                                                        void* PropertyAddress)
 {
-	if (Message.Message != nullptr && InProperty != nullptr)
+	if (Message.GetMessage() != nullptr && InProperty != nullptr)
 	{
 		GET_MESSAGE_FIELD(ByteProperty, uint8)
 		ELSE_GET_MESSAGE_FIELD(Int8Property, int8)

@@ -23,7 +23,8 @@ public:
 	virtual void HandleMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageHandler() { }
+	virtual ~ISGMessageHandler()
+	{
+	}
 };

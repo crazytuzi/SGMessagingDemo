@@ -8,7 +8,6 @@
 #include "Core/Interface/ISGMessageReceiver.h"
 #include "Core/Interface/ISGMessageInterceptor.h"
 #include "Core/Interface/ISGMessageBusListener.h"
-#include "Misc/ConfigCacheIni.h"
 #include "Core/Settings/SGMessagingSettings.h"
 
 
@@ -17,9 +16,9 @@
 
 FSGMessageRouter::FSGMessageRouter()
 	: DelayedMessagesSequence(0)
-	, Stopping(false)
-	, Tracer(MakeShared<FSGMessageTracer, ESPMode::ThreadSafe>())
-	, bAllowDelayedMessaging(false)
+	  , Stopping(false)
+	  , Tracer(MakeShared<FSGMessageTracer, ESPMode::ThreadSafe>())
+	  , bAllowDelayedMessaging(false)
 {
 	ActiveSubscriptions.FindOrAdd(NAME_All);
 	WorkEvent = FPlatformProcess::GetSynchEventFromPool();
@@ -102,11 +101,11 @@ void FSGMessageRouter::Exit()
 
 FTimespan FSGMessageRouter::CalculateWaitTime()
 {
-	FTimespan WaitTime = FTimespan::FromMilliseconds(100);
+	const FTimespan WaitTime = FTimespan::FromMilliseconds(100);
 
 	if (DelayedMessages.Num() > 0)
 	{
-		FTimespan DelayedTime = DelayedMessages.HeapTop().Context->GetTimeSent() - CurrentTime;
+		const FTimespan DelayedTime = DelayedMessages.HeapTop().Context->GetTimeSent() - CurrentTime;
 
 		if (DelayedTime < WaitTime)
 		{
@@ -124,34 +123,39 @@ void FSGMessageRouter::DispatchMessage(const TSharedRef<ISGMessageContext, ESPMo
 	{
 		TArray<TSharedPtr<ISGMessageReceiver, ESPMode::ThreadSafe>> Recipients;
 
-		int32 RecipientCount = Context->GetRecipients().Num();
+		const int32 RecipientCount = Context->GetRecipients().Num();
 
 		// get recipients, either from the context...
 		if (RecipientCount > 0)
 		{
 			if (UE_GET_LOG_VERBOSITY(LogSGMessaging) >= ELogVerbosity::Verbose)
 			{
-				FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
-				UE_LOG(LogSGMessaging, Verbose, TEXT("Dispatching %s from %s to %s"), *Context->GetMessageType().ToString(), *Context->GetSender().ToString(), *RecipientStr);
+				const FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"),
+				                                             &FSGMessageAddress::ToString);
+				UE_LOG(LogSGMessaging, Verbose, TEXT("Dispatching %s from %s to %s"),
+				       *Context->GetMessageTag().ToString(), *Context->GetSender().ToString(), *RecipientStr);
 			}
 
 			FilterRecipients(Context, Recipients);
 
 			if (Recipients.Num() < RecipientCount)
 			{
-				UE_LOG(LogSGMessaging, Verbose, TEXT("%d recipients were filtered out"), RecipientCount - Recipients.Num());
+				UE_LOG(LogSGMessaging, Verbose, TEXT("%d recipients were filtered out"),
+				       RecipientCount - Recipients.Num());
 			}
 		}
 		// ... or from subscriptions
 		else
 		{
-			FilterSubscriptions(ActiveSubscriptions.FindOrAdd(Context->GetMessageType()), Context, Recipients);
+			FilterSubscriptions(ActiveSubscriptions.FindOrAdd(Context->GetMessageTag()), Context, Recipients);
 			FilterSubscriptions(ActiveSubscriptions.FindOrAdd(NAME_All), Context, Recipients);
 
 			if (UE_GET_LOG_VERBOSITY(LogSGMessaging) >= ELogVerbosity::Verbose)
 			{
-				FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
-				UE_LOG(LogSGMessaging, Verbose, TEXT("Dispatching %s from %s to %s subscribers"), *Context->GetMessageType().ToString(), *Context->GetSender().ToString(), *RecipientStr);
+				const FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"),
+				                                             &FSGMessageAddress::ToString);
+				UE_LOG(LogSGMessaging, Verbose, TEXT("Dispatching %s from %s to %s subscribers"),
+				       *Context->GetMessageTag().ToString(), *Context->GetSender().ToString(), *RecipientStr);
 			}
 		}
 
@@ -168,7 +172,8 @@ void FSGMessageRouter::DispatchMessage(const TSharedRef<ISGMessageContext, ESPMo
 			}
 			else
 			{
-				TGraphTask<FSGMessageDispatchTask>::CreateTask().ConstructAndDispatchWhenReady(RecipientThread, Context, Recipient, Tracer);
+				TGraphTask<FSGMessageDispatchTask>::CreateTask().ConstructAndDispatchWhenReady(
+					RecipientThread, Context, Recipient, Tracer);
 			}
 		}
 	}
@@ -181,7 +186,7 @@ void FSGMessageRouter::FilterSubscriptions(
 	TArray<TSharedPtr<ISGMessageReceiver, ESPMode::ThreadSafe>>& OutRecipients
 )
 {
-	ESGMessageScope MessageScope = Context->GetScope();
+	const ESGMessageScope MessageScope = Context->GetScope();
 
 	for (int32 SubscriptionIndex = 0; SubscriptionIndex < Subscriptions.Num(); ++SubscriptionIndex)
 	{
@@ -192,14 +197,12 @@ void FSGMessageRouter::FilterSubscriptions(
 			continue;
 		}
 
-		auto Subscriber = Subscription->GetSubscriber().Pin();
-
-		if (Subscriber.IsValid())
+		if (auto Subscriber = Subscription->GetSubscriber().Pin())
 		{
 			if (MessageScope == ESGMessageScope::Thread)
 			{
-				ENamedThreads::Type RecipientThread = Subscriber->GetRecipientThread();
-				ENamedThreads::Type SenderThread = Context->GetSenderThread();
+				const ENamedThreads::Type RecipientThread = Subscriber->GetRecipientThread();
+				const ENamedThreads::Type SenderThread = Context->GetSenderThread();
 
 				if (RecipientThread != SenderThread)
 				{
@@ -222,13 +225,11 @@ void FSGMessageRouter::FilterRecipients(
 	const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
 	TArray<TSharedPtr<ISGMessageReceiver, ESPMode::ThreadSafe>>& OutRecipients)
 {
-	FSGMessageScopeRange IncludeNetwork = FSGMessageScopeRange::AtLeast(ESGMessageScope::Network);
+	const FSGMessageScopeRange IncludeNetwork = FSGMessageScopeRange::AtLeast(ESGMessageScope::Network);
 	const TArray<FSGMessageAddress>& RecipientList = Context->GetRecipients();
 	for (const auto& RecipientAddress : RecipientList)
 	{
-		auto Recipient = ActiveRecipients.FindRef(RecipientAddress).Pin();
-
-		if (Recipient.IsValid())
+		if (auto Recipient = ActiveRecipients.FindRef(RecipientAddress).Pin())
 		{
 			// if the recipient is not local and the scope does not include network, filter it out of the recipient list
 			if (Recipient->IsLocal() || IncludeNetwork.Contains(Context->GetScope()))
@@ -246,7 +247,7 @@ void FSGMessageRouter::FilterRecipients(
 
 void FSGMessageRouter::ProcessCommands()
 {
-	CommandDelegate Command;
+	FCommandDelegate Command;
 
 	while (Commands.Dequeue(Command))
 	{
@@ -282,22 +283,24 @@ void FSGMessageRouter::Tick()
 /* FSGMessageRouter callbacks
  *****************************************************************************/
 
-void FSGMessageRouter::HandleAddInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageType)
+void FSGMessageRouter::HandleAddInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor,
+                                            FName MessageTag)
 {
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s as intereceptor for %s messages"), *Interceptor->GetDebugName().ToString(), *MessageType.ToString());
+	UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s as intereceptor for %s messages"),
+	       *Interceptor->GetDebugName().ToString(), *MessageTag.ToString());
 
-	ActiveInterceptors.FindOrAdd(MessageType).AddUnique(Interceptor);
-	Tracer->TraceAddedInterceptor(Interceptor, MessageType);
+	ActiveInterceptors.FindOrAdd(MessageTag).AddUnique(Interceptor);
+	Tracer->TraceAddedInterceptor(Interceptor, MessageTag);
 }
 
 
-void FSGMessageRouter::HandleAddRecipient(FSGMessageAddress Address, TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> RecipientPtr)
+void FSGMessageRouter::HandleAddRecipient(FSGMessageAddress Address,
+                                          TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> RecipientPtr)
 {
-	auto Recipient = RecipientPtr.Pin();
-
-	if (Recipient.IsValid())
+	if (const auto Recipient = RecipientPtr.Pin())
 	{
-		UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s on %s as recipient"), *Recipient->GetDebugName().ToString(), *Address.ToString());
+		UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s on %s as recipient"), *Recipient->GetDebugName().ToString(),
+		       *Address.ToString());
 
 		ActiveRecipients.FindOrAdd(Address) = Recipient;
 		Tracer->TraceAddedRecipient(Address, Recipient.ToSharedRef());
@@ -308,23 +311,24 @@ void FSGMessageRouter::HandleAddRecipient(FSGMessageAddress Address, TWeakPtr<IS
 
 void FSGMessageRouter::HandleAddSubscriber(TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe> Subscription)
 {
-	auto Subscriber = Subscription->GetSubscriber().Pin();
-
-	if (Subscriber.IsValid())
+	if (const auto Subscriber = Subscription->GetSubscriber().Pin())
 	{
-		UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s as a subscriber for %s messages"), *Subscriber->GetDebugName().ToString(), *Subscription->GetMessageType().ToString());
+		UE_LOG(LogSGMessaging, Verbose, TEXT("Adding %s as a subscriber for %s messages"),
+		       *Subscriber->GetDebugName().ToString(), *Subscription->GetMessageTag().ToString());
 	}
 
-	ActiveSubscriptions.FindOrAdd(Subscription->GetMessageType()).AddUnique(Subscription);
+	ActiveSubscriptions.FindOrAdd(Subscription->GetMessageTag()).AddUnique(Subscription);
 	Tracer->TraceAddedSubscription(Subscription);
 }
 
 
-void FSGMessageRouter::HandleRemoveInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageType)
+void FSGMessageRouter::HandleRemoveInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor,
+                                               FName MessageTag)
 {
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s as intereceptor for %s messages"), *Interceptor->GetDebugName().ToString(), *MessageType.ToString());
+	UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s as intereceptor for %s messages"),
+	       *Interceptor->GetDebugName().ToString(), *MessageTag.ToString());
 
-	if (MessageType == NAME_All)
+	if (MessageTag == NAME_All)
 	{
 		for (auto& InterceptorsPair : ActiveInterceptors)
 		{
@@ -333,20 +337,19 @@ void FSGMessageRouter::HandleRemoveInterceptor(TSharedRef<ISGMessageInterceptor,
 	}
 	else
 	{
-		auto& Interceptors = ActiveInterceptors.FindOrAdd(MessageType);
+		auto& Interceptors = ActiveInterceptors.FindOrAdd(MessageTag);
 		Interceptors.Remove(Interceptor);
 	}
 
-	Tracer->TraceRemovedInterceptor(Interceptor, MessageType);
+	Tracer->TraceRemovedInterceptor(Interceptor, MessageTag);
 }
 
 void FSGMessageRouter::HandleRemoveRecipient(FSGMessageAddress Address)
 {
-	auto Recipient = ActiveRecipients.FindRef(Address).Pin();
-
-	if (Recipient.IsValid())
+	if (const auto Recipient = ActiveRecipients.FindRef(Address).Pin())
 	{
-		UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s on %s as recipient"), *Recipient->GetDebugName().ToString(), *Address.ToString());
+		UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s on %s as recipient"), *Recipient->GetDebugName().ToString(),
+		       *Address.ToString());
 
 		ActiveRecipients.Remove(Address);
 		Tracer->TraceRemovedRecipient(Address);
@@ -355,9 +358,10 @@ void FSGMessageRouter::HandleRemoveRecipient(FSGMessageAddress Address)
 }
 
 
-void FSGMessageRouter::HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> SubscriberPtr, FName MessageType)
+void FSGMessageRouter::HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> SubscriberPtr,
+                                              FName MessageTag)
 {
-	auto Subscriber = SubscriberPtr.Pin();
+	const auto Subscriber = SubscriberPtr.Pin();
 
 	if (!Subscriber.IsValid())
 	{
@@ -366,7 +370,7 @@ void FSGMessageRouter::HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMo
 
 	for (auto& SubscriptionsPair : ActiveSubscriptions)
 	{
-		if ((MessageType != NAME_All) && (MessageType != SubscriptionsPair.Key))
+		if ((MessageTag != NAME_All) && (MessageTag != SubscriptionsPair.Key))
 		{
 			continue;
 		}
@@ -379,10 +383,11 @@ void FSGMessageRouter::HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMo
 
 			if (Subscription->GetSubscriber().Pin() == Subscriber)
 			{
-				UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s as a subscriber for %s messages"), *Subscriber->GetDebugName().ToString(), *Subscription->GetMessageType().ToString());
+				UE_LOG(LogSGMessaging, Verbose, TEXT("Removing %s as a subscriber for %s messages"),
+				       *Subscriber->GetDebugName().ToString(), *Subscription->GetMessageTag().ToString());
 
 				Subscriptions.RemoveAtSwap(SubscriptionIndex);
-				Tracer->TraceRemovedSubscription(Subscription.ToSharedRef(), MessageType);
+				Tracer->TraceRemovedSubscription(Subscription.ToSharedRef(), MessageTag);
 
 				break;
 			}
@@ -393,18 +398,20 @@ void FSGMessageRouter::HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMo
 
 void FSGMessageRouter::HandleRouteMessage(TSharedRef<ISGMessageContext, ESPMode::ThreadSafe> Context)
 {
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Routing %s message from %s"), *Context->GetMessageType().ToString(), *Context->GetSender().ToString());
+	UE_LOG(LogSGMessaging, Verbose, TEXT("Routing %s message from %s"), *Context->GetMessageTag().ToString(),
+	       *Context->GetSender().ToString());
 
 	Tracer->TraceRoutedMessage(Context);
 
 	// intercept routing
-	auto& Interceptors = ActiveInterceptors.FindOrAdd(Context->GetMessageType());
+	auto& Interceptors = ActiveInterceptors.FindOrAdd(Context->GetMessageTag());
 
-	for (auto& Interceptor : Interceptors)
+	for (const auto& Interceptor : Interceptors)
 	{
 		if (Interceptor->InterceptMessage(Context))
 		{
-			UE_LOG(LogSGMessaging, Verbose, TEXT("Message was intercepted by %s"), *Interceptor->GetDebugName().ToString());
+			UE_LOG(LogSGMessaging, Verbose, TEXT("Message was intercepted by %s"),
+			       *Interceptor->GetDebugName().ToString());
 
 			Tracer->TraceInterceptedMessage(Context, Interceptor.ToSharedRef());
 
@@ -439,8 +446,7 @@ void FSGMessageRouter::NotifyRegistration(const FSGMessageAddress& Address, ESGM
 {
 	for (auto It = ActiveRegistrationListeners.CreateIterator(); It; ++It)
 	{
-		auto Listener = It->Pin();
-		if (Listener.IsValid())
+		if (auto Listener = It->Pin())
 		{
 			ENamedThreads::Type ListenerThread = Listener->GetListenerThread();
 
@@ -450,7 +456,8 @@ void FSGMessageRouter::NotifyRegistration(const FSGMessageAddress& Address, ESGM
 			}
 			else
 			{
-				TGraphTask<FSGBusNotificationDispatchTask>::CreateTask().ConstructAndDispatchWhenReady(ListenerThread, Listener, Address, Notification);
+				TGraphTask<FSGBusNotificationDispatchTask>::CreateTask().ConstructAndDispatchWhenReady(
+					ListenerThread, Listener, Address, Notification);
 			}
 		}
 		else

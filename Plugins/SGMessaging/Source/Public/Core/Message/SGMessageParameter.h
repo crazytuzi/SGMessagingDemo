@@ -8,16 +8,16 @@ struct FSGMessageParameter
 {
 	struct FSGSendParameter
 	{
-		FSGSendParameter(const ESGMessageFlags InFlags = ESGMessageFlags::None,
-		                 const TMap<FName, FString>& InAnnotations = TMapBuilder<FName, FString>(),
-		                 const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment = nullptr,
-		                 const FTimespan& InDelay = FTimespan::Zero(),
-		                 const FDateTime& InExpiration = FDateTime::MaxValue()):
-			Flags(InFlags),
-			Annotations(InAnnotations),
-			Attachment(InAttachment),
-			Delay(InDelay),
-			Expiration(InExpiration)
+		explicit FSGSendParameter(const ESGMessageFlags InFlags = ESGMessageFlags::None,
+		                          const TMap<FName, FString>& InAnnotations = TMapBuilder<FName, FString>(),
+		                          const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment = nullptr,
+		                          const FTimespan& InDelay = FTimespan::Zero(),
+		                          const FDateTime& InExpiration = FDateTime::MaxValue())
+			: Flags(InFlags)
+			  , Annotations(InAnnotations)
+			  , Attachment(InAttachment)
+			  , Delay(InDelay)
+			  , Expiration(InExpiration)
 		{
 		}
 
@@ -34,15 +34,15 @@ struct FSGMessageParameter
 
 	struct FSGPublishParameter
 	{
-		FSGPublishParameter(
+		explicit FSGPublishParameter(
 			const ESGMessageScope InScope = ESGMessageScope::Network,
 			const TMap<FName, FString>& InAnnotations = TMapBuilder<FName, FString>(),
 			const FTimespan& InDelay = FTimespan::Zero(),
-			const FDateTime& InExpiration = FDateTime::MaxValue()):
-			Scope(InScope),
-			Annotations(InAnnotations),
-			Delay(InDelay),
-			Expiration(InExpiration)
+			const FDateTime& InExpiration = FDateTime::MaxValue())
+			: Scope(InScope)
+			  , Annotations(InAnnotations)
+			  , Delay(InDelay)
+			  , Expiration(InExpiration)
 		{
 		}
 

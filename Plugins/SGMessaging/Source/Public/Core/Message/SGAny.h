@@ -5,26 +5,30 @@
 
 struct FSGAny
 {
-	FSGAny(): ScriptArray(nullptr)
+	FSGAny()
+		: ScriptArray(nullptr)
 	{
 	}
 
-	FSGAny(const FSGAny& That) : ScriptArray(That.ScriptArray),
-	                             Pointer(That.Clone()),
-	                             AnyType(That.AnyType)
+	FSGAny(const FSGAny& That)
+		: ScriptArray(That.ScriptArray),
+		  Pointer(That.Clone()),
+		  AnyType(That.AnyType)
 	{
 	}
 
-	FSGAny(FSGAny&& That) noexcept : ScriptArray(MoveTemp(That.ScriptArray)),
-	                                 Pointer(MoveTemp(That.Pointer)),
-	                                 AnyType(MoveTemp(That.AnyType))
+	FSGAny(FSGAny&& That) noexcept
+		: ScriptArray(MoveTemp(That.ScriptArray)),
+		  Pointer(MoveTemp(That.Pointer)),
+		  AnyType(MoveTemp(That.AnyType))
 	{
 	}
 
 	template <typename T, class = TEnableIf<TNot<TIsSame<TDecay<T>, FSGAny>>::Value, T>>
-	explicit FSGAny(T&& Value) : ScriptArray(nullptr),
-	                             Pointer(new TDerived<typename TDecay<T>::Type>(Forward<T>(Value))),
-	                             AnyType(TSGAnyTraits<typename TRemoveReference<decltype(Value)>::Type>::GetType())
+	explicit FSGAny(T&& Value)
+		: ScriptArray(nullptr),
+		  Pointer(new TDerived<typename TDecay<T>::Type>(Forward<T>(Value))),
+		  AnyType(TSGAnyTraits<typename TRemoveReference<decltype(Value)>::Type>::GetType())
 	{
 	}
 
@@ -84,7 +88,8 @@ private:
 	struct TDerived final : FBase
 	{
 		template <typename U>
-		explicit TDerived(U&& InValue) : Value(Forward<U>(InValue))
+		explicit TDerived(U&& InValue)
+			: Value(Forward<U>(InValue))
 		{
 		}
 

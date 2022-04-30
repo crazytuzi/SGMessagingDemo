@@ -2,17 +2,12 @@
 
 #pragma once
 
-#include "CoreTypes.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Array.h"
-#include "Containers/Map.h"
 #include "Misc/Crc.h"
 #include "Misc/Guid.h"
 #include "Templates/SharedPointer.h"
-#include "UObject/Class.h"
 #include "UObject/NameTypes.h"
-#include "UObject/WeakObjectPtr.h"
-#include "UObject/WeakObjectPtrTemplates.h"
 
 class ISGMessageAttachment;
 
@@ -25,12 +20,12 @@ struct FDateTime;
 struct FSGMessageAddress
 {
 public:
-
 	/** Default constructor (no initialization). */
-	FSGMessageAddress() { }
+	FSGMessageAddress()
+	{
+	}
 
 public:
-
 	/**
 	 * Compares two message addresses for equality.
 	 *
@@ -59,7 +54,7 @@ public:
 	 * Serializes a message address from or into an archive.
 	 *
 	 * @param Ar The archive to serialize from or into.
-	 * @param G The address to serialize.
+	 * @param A The address to serialize.
 	 */
 	friend FArchive& operator<<(FArchive& Ar, FSGMessageAddress& A)
 	{
@@ -67,7 +62,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Invalidates the GUID.
 	 *
@@ -101,7 +95,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Calculates the hash for a message address.
 	 *
@@ -114,7 +107,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Returns a new message address.
 	 *
@@ -142,7 +134,6 @@ public:
 	}
 
 private:
-
 	/** Holds a unique identifier. */
 	FGuid UniqueId;
 };
@@ -189,6 +180,7 @@ enum class ESGMessageFlags : uint32
 	/** Guarantee that this message is delivered */
 	Reliable = 1 << 0,
 };
+
 ENUM_CLASS_FLAGS(ESGMessageFlags);
 
 
@@ -220,7 +212,6 @@ typedef TRangeBound<ESGMessageScope> FSGMessageScopeRangeBound;
 class ISGMessageContext
 {
 public:
-
 	/**
 	 * Gets the optional message annotations.
 	 *
@@ -246,17 +237,9 @@ public:
 	 * Gets the message data.
 	 *
 	 * @return A pointer to the message data.
-	 * @see GetAttachment, GetMessageType, GetMessageTypeInfo
+	 * @see GetAttachment, GetMessageTag, GetMessageTypeInfo
 	 */
 	virtual const void* GetMessage() const = 0;
-
-	/**
-	 * Gets the message's type information.
-	 *
-	 * @return Message type information.
-	 * @see GetMessage, GetMessageType
-	 */
-	virtual const TWeakObjectPtr<UScriptStruct>& GetMessageTypeInfo() const = 0;
 
 	/**
 	 * Returns the original message context in case the message was forwarded.
@@ -302,7 +285,7 @@ public:
 	 * @see GetSender, GetRecipients, GetSenderThread
 	 */
 	virtual const FSGMessageAddress& GetForwarder() const = 0;
-	
+
 	/**
 	 * Gets the name of the thread from which the message was sent.
 	 *
@@ -333,10 +316,9 @@ public:
 	 * @return Message type name.
 	 * @see GetMessage, GetMessageTypeInfo
 	 */
-	virtual FName GetMessageType() const = 0;
+	virtual FName GetMessageTag() const = 0;
 
 public:
-
 	/**
 	 * Checks whether this is a forwarded message.
 	 *
@@ -360,7 +342,8 @@ public:
 	}
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageContext() { }
+	virtual ~ISGMessageContext()
+	{
+	}
 };

@@ -1,12 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CoreMinimal.h"
-#include "HAL/PlatformProcess.h"
-#include "Misc/CoreMisc.h"
 #include "Misc/CoreDelegates.h"
 #include "Modules/ModuleManager.h"
 #include "Settings/Public/ISettingsModule.h"
-#include "Core/Bus/SGMessageDispatchTask.h"
 #include "Core/Interface/ISGMessageBus.h"
 #include "Core/Bus/SGMessageBus.h"
 #include "Core/Bridge/SGMessageBridge.h"

@@ -4,7 +4,7 @@
 #include "Core/Interface/ISGMessage.h"
 #include "SGAnyProperty.h"
 
-class FSGMessage
+class FSGMessage final
 	: public ISGMessage
 {
 public:
@@ -13,7 +13,7 @@ public:
 	}
 
 	template <typename ...Args>
-	FSGMessage(Args&&... InParams)
+	explicit FSGMessage(Args&&... InParams)
 	{
 		Add(Forward<Args>(InParams)...);
 	}

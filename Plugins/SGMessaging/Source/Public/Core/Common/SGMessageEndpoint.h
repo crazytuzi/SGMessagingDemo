@@ -2,12 +2,10 @@
 
 #pragma once
 
-#include "CoreTypes.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Array.h"
 #include "Containers/ArrayBuilder.h"
 #include "Containers/Queue.h"
-#include "Core/Interface/ISGMessageAttachment.h"
 #include "Core/Interface/ISGMessageBus.h"
 #include "Core/Interface/ISGMessageContext.h"
 #include "Core/Interface/ISGMessageHandler.h"
@@ -67,56 +65,43 @@ DECLARE_DELEGATE_OneParam(FOnBusNotification, const FSGMessageBusNotification&);
  * The underlying message bus will take ownership of all sent and published message objects. The memory
  * held by the messages must therefore NOT be freed by the caller.
  */
-class FSGMessageEndpoint
+class FSGMessageEndpoint final
 	: public TSharedFromThis<FSGMessageEndpoint, ESPMode::ThreadSafe>
-	, public ISGMessageReceiver
-	, public ISGMessageSender
-	, public ISGBusListener
+	  , public ISGMessageReceiver
+	  , public ISGMessageSender
+	  , public ISGBusListener
 {
 public:
-
-	/**
-	 * Type definition for the endpoint builder.
-	 *
-	 * When building message endpoints that receive messages on AnyThread, use the SafeRelease
-	 * helper function to avoid race conditions when destroying the objects that own the endpoints.
-	 *
-	 * @see SafeRelease
-	 */
-	typedef struct FSGMessageEndpointBuilder Builder;
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
 	 * @param InName The endpoint's name (for debugging purposes).
 	 * @param InBus The message bus to attach this endpoint to.
-	 * @param InHandlers The collection of message handlers to register.
+	 * @param InNotificationDelegate The collection of message handlers to register.
 	 */
-	FSGMessageEndpoint(const FName& InName, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& InBus, const FOnBusNotification InNotificationDelegate)
+	FSGMessageEndpoint(const FName& InName, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& InBus,
+	                   const FOnBusNotification InNotificationDelegate)
 		: Address(FSGMessageAddress::NewAddress())
-		, BusPtr(InBus)
-		, Enabled(true)
-		, NotificationDelegate(InNotificationDelegate)
-		, Id(FGuid::NewGuid())
-		, InboxEnabled(false)
-		, Name(InName)
+		  , BusPtr(InBus)
+		  , Enabled(true)
+		  , NotificationDelegate(InNotificationDelegate)
+		  , Id(FGuid::NewGuid())
+		  , InboxEnabled(false)
+		  , Name(InName)
 	{
 		SetRecipientThread(FTaskGraphInterface::Get().GetCurrentThreadIfKnown());
 	}
 
 	/** Destructor. */
-	~FSGMessageEndpoint()
-	{	
-		auto Bus = BusPtr.Pin();
-
-		if (Bus.IsValid())
+	virtual ~FSGMessageEndpoint() override
+	{
+		if (const auto Bus = BusPtr.Pin())
 		{
 			Bus->Unregister(Address);
 		}
 	}
 
 public:
-
 	/**
 	 * Disables this endpoint.
 	 *
@@ -195,7 +180,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Defers processing of the given message by the specified time delay.
 	 *
@@ -207,9 +191,7 @@ public:
 	 */
 	void Defer(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FTimespan& Delay)
 	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
+		if (const TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled())
 		{
 			Bus->Forward(Context, TArrayBuilder<FSGMessageAddress>().Add(Address), Delay, AsShared());
 		}
@@ -224,125 +206,29 @@ public:
 	 * @param Recipients The list of message recipients to forward the message to.
 	 * @param Delay The time delay.
 	 */
-	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay)
+	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	             const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay)
 	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
+		if (const TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled())
 		{
 			Bus->Forward(Context, Recipients, Delay, AsShared());
 		}
 	}
 
 	/**
-	 * Publishes a message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param TypeInfo The message's type information.
-	 * @param Scope The message scope.
-	 * @param Fields The message content.
-	 * @param Delay The delay after which to publish the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	void Publish(void* Message, UScriptStruct* TypeInfo, ESGMessageScope Scope, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Publish(Message, TypeInfo, Scope, TMap<FName, FString>(), Delay, Expiration);
-	}
-
-	/**
-	 * Publishes a message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param TypeInfo The message's type information.
-	 * @param Scope The message scope.
-	 * @param Annotations An optional message annotations header.
-	 * @param Fields The message content.
-	 * @param Delay The delay after which to publish the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	void Publish(void* Message, UScriptStruct* TypeInfo, ESGMessageScope Scope, const TMap<FName, FString> Annotations, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
-		{
-			Bus->Publish(Message, TypeInfo, Scope, Annotations, Delay, Expiration, AsShared());
-		}
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	UE_DEPRECATED(4.21, "FSGMessageEndpoint::Send with 6 params is deprecated. Please use FMessageEndpoint::Send that takes additionnal ESGMessageFlags instead!")
-	void Send(void* Message, UScriptStruct* TypeInfo, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Send(Message, TypeInfo, ESGMessageFlags::None, Attachment, Recipients, Delay, Expiration);
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 * Allows to specify message flags
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Flags The message's type information.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
-		{
-			Bus->Send(Message, TypeInfo, Flags, TMap<FName, FString>(), Attachment, Recipients, Delay, Expiration, AsShared());
-		}
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Flags The message's type information.
-	 * @param Annotations An optional message annotations header.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TMap<FName, FString> Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
-		{
-			Bus->Send(Message, TypeInfo, Flags, Annotations, Attachment, Recipients, Delay, Expiration, AsShared());
-		}
-	}
-
-	/**
 	 * Subscribes a message handler.
 	 *
-	 * @param MessageType The type name of the messages to subscribe to.
+	 * @param MessageTag The type name of the messages to subscribe to.
 	 * @param ScopeRange The range of message scopes to include in the subscription.
 	 */
-	void Subscribe(const FName& MessageType, const FSGMessageScopeRange& ScopeRange)
+	void Subscribe(const FName& MessageTag, const FSGMessageScopeRange& ScopeRange)
 	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid() && HandlerMap.FindOrAdd(MessageType).IsEmpty())
+		if (HandlerMap.FindOrAdd(MessageTag).IsEmpty())
 		{
-			Bus->Subscribe(AsShared(), MessageType, ScopeRange);
+			if (const TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled())
+			{
+				Bus->Subscribe(AsShared(), MessageTag, ScopeRange);
+			}
 		}
 	}
 
@@ -354,9 +240,7 @@ public:
 	 */
 	void Unsubscribe(const FName& MessageTag)
 	{
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
+		if (const TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = GetBusIfEnabled())
 		{
 			Bus->Unsubscribe(AsShared(), MessageTag);
 		}
@@ -408,7 +292,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Disables the inbox for unhandled messages.
 	 *
@@ -492,7 +375,6 @@ public:
 	}
 
 public:
-
 	//~ ISGMessageReceiver interface
 
 	virtual FName GetDebugName() const override
@@ -539,18 +421,21 @@ public:
 		return RecipientThread;
 	}
 
-	virtual void NotifyRegistration(const FSGMessageAddress& InAddress, ESGMessageBusNotification InNotification)
+	virtual void
+	NotifyRegistration(const FSGMessageAddress& InAddress, ESGMessageBusNotification InNotification) override
 	{
 		if (!Enabled)
 		{
 			return;
 		}
 
-		NotificationDelegate.ExecuteIfBound(FSGMessageBusNotification{ InNotification, InAddress });
+		if (NotificationDelegate.IsBound())
+		{
+			NotificationDelegate.Execute(FSGMessageBusNotification{InNotification, InAddress});
+		}
 	}
 
 public:
-
 	//~ ISGMessageSender interface
 
 	virtual FSGMessageAddress GetSenderAddress() override
@@ -558,30 +443,16 @@ public:
 		return Address;
 	}
 
-	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FString& Error) override
+	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                                const FString& Error) override
 	{
-		ErrorDelegate.ExecuteIfBound(Context.Get(), Error);
+		if (ErrorDelegate.IsBound())
+		{
+			ErrorDelegate.Execute(Context.Get(), Error);
+		}
 	}
 
 public:
-
-	/**
-	 * Creates a message of the specified template type.
-	 *
-	 * Prefer using this helper rather than explicit new. See FEngineServicePong.
-	 *
-	 * @param Args The constructor arguments to the template type
-	 */
-	template<typename T, typename... InArgTypes>
-	static T* MakeMessage(InArgTypes&&... Args)
-	{
-		void* Buffer = FMemory::Malloc(sizeof(T));
-
-		T* Message = new (Buffer) T(::Forward<InArgTypes>(Args)...);
-
-		return Message;
-	}
-
 	/**
 	 * Immediately forwards a previously received message to the specified recipient.
 	 *
@@ -602,10 +473,10 @@ public:
 	 *
 	 * @param Context The context of the message to forward.
 	 * @param Recipient The address of the recipient to forward the message to.
-	 * @param ForwardingScope The scope of the forwarded message.
 	 * @param Delay The delay after which to publish the message.
 	 */
-	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FSGMessageAddress& Recipient, const FTimespan& Delay)
+	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FSGMessageAddress& Recipient,
+	             const FTimespan& Delay)
 	{
 		Forward(Context, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Delay);
 	}
@@ -617,123 +488,17 @@ public:
 	 *
 	 * @param Context The context of the message to forward.
 	 * @param Recipients The list of message recipients to forward the message to.
-	 * @param ForwardingScope The scope of the forwarded message.
 	 */
-	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TArray<FSGMessageAddress>& Recipients)
+	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	             const TArray<FSGMessageAddress>& Recipients)
 	{
 		Forward(Context, Recipients, FTimespan::Zero());
-	}
-
-	/**
-	 * Immediately publishes a message to all subscribed recipients.
-	 *
-	 * @param Message The message to publish.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message)
-	{
-		Publish(Message, MessageType::StaticStruct(), ESGMessageScope::Network, FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Immediately pa message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param Scope The message scope.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, ESGMessageScope Scope)
-	{
-		Publish(Message, MessageType::StaticStruct(), Scope, FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Immediately publishes a message to all subscribed recipients.
-	 *
-	 * @param Message The message to publish.
-	 * @param Annotations An optional message annotations header.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, const TMap<FName, FString> Annotations)
-	{
-		Publish(Message, MessageType::StaticStruct(), Annotations, ESGMessageScope::Network, FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Immediately pa message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param Annotations An optional message annotations header.
-	 * @param Scope The message scope.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, const TMap<FName, FString> Annotations, ESGMessageScope Scope)
-	{
-		Publish(Message, MessageType::StaticStruct(), Annotations, Scope, FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Publishes a message to all subscribed recipients after a given delay.
-	 *
-	 * @param Message The message to publish.
-	 * @param Delay The delay after which to publish the message.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, const FTimespan& Delay)
-	{
-		Publish(Message, MessageType::StaticStruct(), ESGMessageScope::Network, Delay, FDateTime::MaxValue());
-	}
-
-	/**
-	 * Publishes a message to all subscribed recipients within the specified scope after a given delay.
-	 *
-	 * @param Message The message to publish.
-	 * @param Scope The message scope.
-	 * @param Delay The delay after which to publish the message.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, ESGMessageScope Scope, const FTimespan& Delay)
-	{
-		Publish(Message, MessageType::StaticStruct(), Scope, Delay, FDateTime::MaxValue());
-	}
-
-	/**
-	 * Publishes a message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param Scope The message scope.
-	 * @param Fields The message content.
-	 * @param Delay The delay after which to publish the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, ESGMessageScope Scope, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Publish(Message, MessageType::StaticStruct(), Scope, Delay, Expiration);
-	}
-
-	/**
-	 * Publishes a message to all subscribed recipients within the specified scope.
-	 *
-	 * @param Message The message to publish.
-	 * @param Annotations An optional message annotations header.
-	 * @param Scope The message scope.
-	 * @param Fields The message content.
-	 * @param Delay The delay after which to publish the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	template<typename MessageType>
-	void Publish(MessageType* Message, const TMap<FName, FString> Annotations, ESGMessageScope Scope, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Publish(Message, MessageType::StaticStruct(), Annotations, Scope, Delay, Expiration);
 	}
 
 	template <typename MessageType>
 	void Publish(const FName& MessageTag, MessageType* Message, CONST_PUBLISH_PARAMETER_SIGNATURE)
 	{
-		const auto Bus = GetBusIfEnabled();
-
-		if (Bus.IsValid())
+		if (const auto Bus = GetBusIfEnabled())
 		{
 			Bus->Publish(MessageTag, Message, PUBLISH_PARAMETER_FORWARD, AsShared());
 		}
@@ -751,204 +516,6 @@ public:
 		auto Message = FSGMessageBuilder::Builder<FSGMessage>(Params...);
 
 		PublishWithMessage(MESSAGE_TAG_PARAM_VALUE, MESSAGE_PARAMETER, Message);
-	}
-
-	/**
-	 * Immediately sends a message to the specified recipient.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Recipient The message recipient.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const FSGMessageAddress& Recipient)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, nullptr, TArrayBuilder<FSGMessageAddress>().Add(Recipient), FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Immediately sends a message to the specified recipient.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Annotations An optional message annotations header.
-	 * @param Recipient The message recipient.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TMap<FName, FString> Annotations, const FSGMessageAddress& Recipient)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Annotations, nullptr, TArrayBuilder<FSGMessageAddress>().Add(Recipient), FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message to the specified recipient after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Recipient The message recipient.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const FSGMessageAddress& Recipient, const FTimespan& Delay)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, nullptr, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Delay, FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message with fields and expiration to the specified recipient after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Recipient The message recipient.
-	 * @param Expiration The time at which the message expires.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const FSGMessageAddress& Recipient, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, nullptr, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Delay, Expiration);
-	}
-
-	/**
-	 * Sends a message with fields and attachment to the specified recipient.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipient The message recipient.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const FSGMessageAddress& Recipient)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Attachment, TArrayBuilder<FSGMessageAddress>().Add(Recipient), FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message with fields, attachment and expiration to the specified recipient after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipient The message recipient.
-	 * @param Expiration The time at which the message expires.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const FSGMessageAddress& Recipient, const FDateTime& Expiration, const FTimespan& Delay)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Attachment, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Delay, Expiration);
-	}
-
-	/**
-	 * Sends a message with fields, attachment and expiration to the specified recipient after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Annotations An optional message annotations header.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipient The message recipient.
-	 * @param Expiration The time at which the message expires.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TMap<FName, FString> Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const FSGMessageAddress& Recipient, const FDateTime& Expiration, const FTimespan& Delay)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Annotations, Attachment, TArrayBuilder<FSGMessageAddress>().Add(Recipient), Delay, Expiration);
-	}
-
-	/**
-	 * Immediately sends a message to the specified list of recipients.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Recipients The message recipients.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TArray<FSGMessageAddress>& Recipients)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, nullptr, Recipients, FTimespan::Zero(), FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients after a given delay after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, nullptr, Recipients, Delay, FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message with fields and attachment to the specified list of recipients after a given delay.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Attachment, Recipients, Delay, FDateTime::MaxValue());
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 *
-	 * @param MessageType The type of message to send.
-	 * @param Message The message to send.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Send(Message, MessageType::StaticStruct(), ESGMessageFlags::None, Attachment, Recipients, Delay, Expiration);
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 * Allows to specify message flags
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Flags The message's type information.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, ESGMessageFlags Flags, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Send(Message, MessageType::StaticStruct(), Flags, Attachment, Recipients, Delay, Expiration);
-	}
-
-	/**
-	 * Sends a message to the specified list of recipients.
-	 * Allows to specify message flags
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Flags The message's type information.
-	 * @param Annotations An optional message annotations header.
-	 * @param Attachment An optional binary data attachment.
-	 * @param Recipients The message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 */
-	template<typename MessageType>
-	void Send(MessageType* Message, ESGMessageFlags Flags, const TMap<FName, FString> Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration)
-	{
-		Send(Message, MessageType::StaticStruct(), Flags, Annotations, Attachment, Recipients, Delay, Expiration);
 	}
 
 	template <typename MessageType>
@@ -993,22 +560,6 @@ public:
 		Send(MESSAGE_TAG_PARAM_VALUE, TArrayBuilder<FSGMessageAddress>().Add(Recipient), MESSAGE_PARAMETER, Params...);
 	}
 
-	/**
-	 * Template method to subscribe the message endpoint to the specified type of messages with the default message scope.
-	 *
-	 * The default message scope is all messages excluding loopback messages.
-	 *
-	 * @param HandlerType The type of the class handling the message.
-	 * @param MessageType The type of messages to subscribe to.
-	 * @param Handler The class handling the messages.
-	 * @param HandlerFunc The class function handling the messages.
-	 */
-	template<class MessageType>
-	void Subscribe()
-	{
-		Subscribe(MessageType::StaticStruct()->GetFName(), FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
-	}
-
 	template <typename HandlerType>
 	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
 	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
@@ -1031,21 +582,6 @@ public:
 	}
 
 	/**
-	 * Template method to subscribe the message endpoint to the specified type and scope of messages.
-	 *
-	 * @param HandlerType The type of the class handling the message.
-	 * @param MessageType The type of messages to subscribe to.
-	 * @param Handler The class handling the messages.
-	 * @param HandlerFunc The class function handling the messages.
-	 * @param ScopeRange The range of message scopes to include in the subscription.
-	 */
-	template<class MessageType>
-	void Subscribe(const FSGMessageScopeRange& ScopeRange)
-	{
-		Subscribe(MessageType::StaticStruct()->GetFName(), ScopeRange);
-	}
-
-	/**
 	 * Unsubscribes this endpoint from all message types.
 	 *
 	 * @see Subscribe
@@ -1055,20 +591,7 @@ public:
 		Unsubscribe(NAME_All);
 	}
 
-	/**
-	 * Template method to unsubscribe the endpoint from the specified message type.
-	 *
-	 * @param MessageType The type of message to unsubscribe (NAME_All = all types).
-	 * @see Subscribe
-	 */
-	template<class MessageType>
-	void Unsubscribe()
-	{
-		Unsubscribe(MessageType::StaticStruct()->GetFName());
-	}
-
 public:
-
 	/**
 	 * Safely releases a message endpoint that is receiving messages on AnyThread.
 	 *
@@ -1098,7 +621,6 @@ protected:
 	 *
 	 * This overload is used to register raw class member functions.
 	 *
-	 * @param HandlerType The type of the object handling the messages.
 	 * @param MessageTag The type of messages to handle.
 	 * @param Handler The class handling the messages.
 	 * @param HandlerFunc The class function handling the messages.
@@ -1131,8 +653,8 @@ protected:
 	 * This overload is used to register functions that are compatible with TFunction
 	 * function objects, such as global and static functions, as well as lambdas.
 	 *
-	 * @param MessageType The type of messages to handle.
-	 * @param Function The function object handling the messages.
+	 * @param MessageTag The type of messages to handle.
+	 * @param HandlerFunc The function object handling the messages.
 	 * @return This instance (for method chaining).
 	 * @see WithHandler
 	 */
@@ -1167,7 +689,7 @@ protected:
 
 		Handlers.Add(InHandler);
 	}
-	
+
 	/**
 	 * Clears all handlers in a way that guarantees it won't overlap with message processing. This preserves internal integrity
 	 * of the array and cases where our owner may be shutting down while receiving messages.
@@ -1207,7 +729,7 @@ protected:
 
 		FScopeLock Lock(&HandlersCS);
 
-		if (const auto Handlers = HandlerMap.Find(Context->GetMessageType()))
+		if (const auto Handlers = HandlerMap.Find(Context->GetMessageTag()))
 		{
 			for (int32 HandlerIndex = 0; HandlerIndex < Handlers->Num(); ++HandlerIndex)
 			{
@@ -1217,7 +739,6 @@ protected:
 	}
 
 private:
-
 	/** Holds the endpoint's identifier. */
 	const FSGMessageAddress Address;
 
@@ -1249,10 +770,9 @@ private:
 	ENamedThreads::Type RecipientThread;
 
 private:
-
 	/** Holds a delegate that is invoked in case of messaging errors. */
 	FOnMessageEndpointError ErrorDelegate;
 
-	/** Sigfnifies that the handler array is being accessed and other threads should wait or skip */
-	FCriticalSection		HandlersCS;
+	/** Signifies that the handler array is being accessed and other threads should wait or skip */
+	FCriticalSection HandlersCS;
 };

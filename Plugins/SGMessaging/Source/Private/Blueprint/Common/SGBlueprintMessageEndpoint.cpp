@@ -12,8 +12,8 @@ USGBlueprintMessageEndpoint::~USGBlueprintMessageEndpoint()
 	}
 }
 
-void USGBlueprintMessageEndpoint::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
-                                            const FSGBlueprintMessageDelegate& InDelegate)
+void USGBlueprintMessageEndpoint::Subscribe(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -22,9 +22,9 @@ void USGBlueprintMessageEndpoint::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
 	}
 }
 
-void USGBlueprintMessageEndpoint::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
-                                          const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
-                                          const FSGBlueprintMessage InMessage)
+void USGBlueprintMessageEndpoint::Publish(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
+	const FSGBlueprintMessage InMessage) const
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -33,10 +33,9 @@ void USGBlueprintMessageEndpoint::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
 	}
 }
 
-void USGBlueprintMessageEndpoint::Send(MESSAGE_TAG_PARAM_SIGNATURE,
-                                       const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                       const FSGBlueprintSendParameter MESSAGE_PARAMETER,
-                                       const FSGBlueprintMessage InMessage)
+void USGBlueprintMessageEndpoint::Send(
+	MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGBlueprintMessageAddress>& InRecipients,
+	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage) const
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -56,7 +55,7 @@ void USGBlueprintMessageEndpoint::Send(MESSAGE_TAG_PARAM_SIGNATURE,
 
 void USGBlueprintMessageEndpoint::Forward(const FSGBlueprintMessageContext& InContext,
                                           const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                          const FTimespan InDelay)
+                                          const FTimespan InDelay) const
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -74,7 +73,7 @@ void USGBlueprintMessageEndpoint::Forward(const FSGBlueprintMessageContext& InCo
 }
 
 void USGBlueprintMessageEndpoint::Unsubscribe(
-	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate)
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
 {
 	if (MessageEndpoint.IsValid())
 	{

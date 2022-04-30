@@ -33,8 +33,8 @@ void USGMessageEndpointComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	// ...
 }
 
-void USGMessageEndpointComponent::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
-                                            const FSGBlueprintMessageDelegate& InDelegate)
+void USGMessageEndpointComponent::Subscribe(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -42,9 +42,9 @@ void USGMessageEndpointComponent::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE,
 	}
 }
 
-void USGMessageEndpointComponent::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
-                                          const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
-                                          const FSGBlueprintMessage InMessage)
+void USGMessageEndpointComponent::Publish(
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
+	const FSGBlueprintMessage InMessage) const
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -52,10 +52,9 @@ void USGMessageEndpointComponent::Publish(MESSAGE_TAG_PARAM_SIGNATURE,
 	}
 }
 
-void USGMessageEndpointComponent::Send(MESSAGE_TAG_PARAM_SIGNATURE,
-                                       const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                       const FSGBlueprintSendParameter MESSAGE_PARAMETER,
-                                       const FSGBlueprintMessage InMessage)
+void USGMessageEndpointComponent::Send(
+	MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGBlueprintMessageAddress>& InRecipients,
+	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage) const
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -65,7 +64,7 @@ void USGMessageEndpointComponent::Send(MESSAGE_TAG_PARAM_SIGNATURE,
 
 void USGMessageEndpointComponent::Forward(const FSGBlueprintMessageContext& InContext,
                                           const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                          const FTimespan InDelay)
+                                          const FTimespan InDelay) const
 {
 	if (IsValid(MessageEndpoint))
 	{

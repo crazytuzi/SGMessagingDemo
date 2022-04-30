@@ -10,11 +10,6 @@ FSGMessageContext::~FSGMessageContext()
 {
 	if (Message != nullptr)
 	{
-		if (UScriptStruct* TypeInfoPtr = TypeInfo.Get())
-		{
-			TypeInfoPtr->DestroyStruct(Message);
-		}
-
 		FMemory::Free(Message);
 	}
 }
@@ -64,17 +59,6 @@ const void* FSGMessageContext::GetMessage() const
 	}
 
 	return Message;
-}
-
-
-const TWeakObjectPtr<UScriptStruct>& FSGMessageContext::GetMessageTypeInfo() const
-{
-	if (OriginalContext.IsValid())
-	{
-		return OriginalContext->GetMessageTypeInfo();
-	}
-
-	return TypeInfo;
 }
 
 
@@ -138,11 +122,11 @@ const FDateTime& FSGMessageContext::GetTimeSent() const
 	return TimeSent;
 }
 
-FName FSGMessageContext::GetMessageType() const
+FName FSGMessageContext::GetMessageTag() const
 {
 	if (OriginalContext.IsValid())
 	{
-		return OriginalContext->GetMessageType();
+		return OriginalContext->GetMessageTag();
 	}
 
 	return MessageTag;

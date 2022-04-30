@@ -4,7 +4,6 @@
 #include "SGTestDelayReply.h"
 #include "EngineUtils.h"
 #include "SGTestDelayForward.h"
-#include "Core/Common/SGMessageEndpointBuilder.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SGMessagingDemo/Test/SGMessagingType.h"
 

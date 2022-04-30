@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Containers/Array.h"
-#include "Math/Range.h"
 #include "Templates/SharedPointer.h"
 
 class FName;
@@ -15,7 +14,6 @@ class ISGMessageSender;
 class ISGMessageSubscription;
 class ISGMessageTracer;
 class ISGBusListener;
-class UScriptStruct;
 
 enum class ESGMessageBusNotification : uint8;
 enum class ESGMessageScope : uint8;
@@ -112,7 +110,6 @@ DECLARE_MULTICAST_DELEGATE(FOnMessageBusShutdown);
 class ISGMessageBus
 {
 public:
-
 	/**
 	 * Forwards a previously received message.
 	 *
@@ -124,7 +121,9 @@ public:
 	 * @param Forwarder The sender that forwards the message.
 	 * @see Publish, Send
 	 */
-	virtual void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Forwarder) = 0;
+	virtual void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                     const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay,
+	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Forwarder) = 0;
 
 	/**
 	 * Gets the message bus tracer.
@@ -137,32 +136,16 @@ public:
 	 * Adds an interceptor for messages of the specified type.
 	 *
 	 * @param Interceptor The interceptor.
-	 * @param MessageType The type of messages to intercept.
+	 * @param MessageTag The type of messages to intercept.
 	 * @see Unintercept
 	 */
-	virtual void Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) = 0;
-
-	/**
-	 * Sends a message to subscribed recipients.
-	 *
-	 * The bus takes over ownership of the message's memory.
-	 * It must NOT be freed by the caller.
-	 *
-	 * @param Message The message to publish.
-	 * @param TypeInfo The message's type information.
-	 * @param Scope The message scope.
-	 * @param Annotations An optional message annotations header.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 * @param Publisher The message publisher.
-	 * @see Forward, Send
-	 */
-	virtual void Publish(void* Message, UScriptStruct* TypeInfo, ESGMessageScope Scope, const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) = 0;
+	virtual void Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                       const FName& MessageTag) = 0;
 
 	virtual void Publish(const FName& MessageTag, void* Message, ESGMessageScope Scope,
 	                     const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration,
 	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) = 0;
-	
+
 	/**
 	 * Registers a message recipient with the message bus.
 	 *
@@ -170,26 +153,8 @@ public:
 	 * @param Recipient The message recipient.
 	 * @see Unregister
 	 */
-	virtual void Register(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient) = 0;
-
-	/**
-	 * Sends a message to multiple recipients.
-	 *
-	 * The bus takes over ownership of the message's memory.
-	 * It must NOT be freed by the caller.
-	 *
-	 * @param Message The message to send.
-	 * @param TypeInfo The message's type information.
-	 * @param Flags The message flags.
-	 * @param Annotations An optional message annotations header.
-	 * @param Attachment The binary data to attach to the message.
-	 * @param Recipients The list of message recipients.
-	 * @param Delay The delay after which to send the message.
-	 * @param Expiration The time at which the message expires.
-	 * @param Sender The message sender.
-	 * @see Forward, Publish
-	 */
-	virtual void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TMap<FName, FString>& Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) = 0;
+	virtual void Register(const FSGMessageAddress& Address,
+	                      const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient) = 0;
 
 	virtual void Send(const FName& MessageTag,
 	                  void* Message,
@@ -200,7 +165,7 @@ public:
 	                  const FTimespan& Delay,
 	                  const FDateTime& Expiration,
 	                  const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) = 0;
-	
+
 	/**
 	 * Shuts down the message bus.
 	 *
@@ -215,21 +180,24 @@ public:
 	 * The returned interface can be used to query the subscription's details and its enabled state.
 	 *
 	 * @param Subscriber The subscriber wishing to receive the messages.
-	 * @param MessageType The type of messages to subscribe to (NAME_All = subscribe to all message types).
+	 * @param MessageTag The type of messages to subscribe to (NAME_All = subscribe to all message types).
 	 * @param ScopeRange The range of message scopes to include in the subscription.
 	 * @return The added subscription, or nullptr if the subscription failed.
 	 * @see Unsubscribe
 	 */
-	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType, const TRange<ESGMessageScope>& ScopeRange) = 0;
+	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(
+		const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag,
+		const TRange<ESGMessageScope>& ScopeRange) = 0;
 
 	/**
 	 * Removes an interceptor for messages of the specified type.
 	 *
 	 * @param Interceptor The interceptor to remove.
-	 * @param MessageType The type of messages to stop intercepting.
+	 * @param MessageTag The type of messages to stop intercepting.
 	 * @see Intercept
 	 */
-	virtual void Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) = 0;
+	virtual void Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                         const FName& MessageTag) = 0;
 
 	/**
 	 * Unregisters a message recipient from the message bus.
@@ -246,7 +214,8 @@ public:
 	 * @param MessageTag The type of messages to unsubscribe from (NAME_All = all types).
 	 * @see Subscribe
 	 */
-	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag) = 0;
+	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+	                         const FName& MessageTag) = 0;
 
 	/**
 	 * Add a listener to the bus notifications
@@ -266,7 +235,6 @@ public:
 	virtual const FString& GetName() const = 0;
 
 public:
-
 	/**
 	 * Returns a delegate that is executed when the message bus is shutting down.
 	 *
@@ -276,7 +244,8 @@ public:
 	virtual FOnMessageBusShutdown& OnShutdown() = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageBus() { }
+	virtual ~ISGMessageBus()
+	{
+	}
 };

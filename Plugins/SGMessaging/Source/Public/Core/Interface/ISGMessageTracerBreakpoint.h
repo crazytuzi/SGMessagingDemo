@@ -15,7 +15,6 @@ class ISGMessageContext;
 class ISGMessageTracerBreakpoint
 {
 public:
-
 	/**
 	 * Checks whether this breakpoint is enabled.
 	 *
@@ -32,7 +31,8 @@ public:
 	virtual bool ShouldBreak(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) const = 0;
 
 protected:
-
 	/** Hidden destructor. */
-	virtual ~ISGMessageTracerBreakpoint() { }
+	virtual ~ISGMessageTracerBreakpoint()
+	{
+	}
 };

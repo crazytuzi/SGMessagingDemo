@@ -27,7 +27,6 @@ class FString;
 class ISGMessageSender
 {
 public:
-
 	/**
 	 * Gets the sender's address.
 	 *
@@ -41,10 +40,12 @@ public:
 	 * @param Context The context of the message that generated the error.
 	 * @param Error The error string.
 	 */
-	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FString& Error) = 0;
+	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                                const FString& Error) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageSender() { }
+	virtual ~ISGMessageSender()
+	{
+	}
 };

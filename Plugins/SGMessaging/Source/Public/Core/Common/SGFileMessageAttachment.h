@@ -11,34 +11,35 @@
  *
  * WARNING: Message attachments do not work yet for out of process messages.
  */
-class FSGFileMessageAttachment
+class FSGFileMessageAttachment final
 	: public ISGMessageAttachment
 {
 public:
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
-	 * @param Filename The full name and path of the file.
+	 * @param InFilename The full name and path of the file.
 	 */
-	FSGFileMessageAttachment( const FString& InFilename )
+	explicit FSGFileMessageAttachment(const FString& InFilename)
 		: AutoDeleteFile(false)
-		, Filename(InFilename)
-	{ }
+		  , Filename(InFilename)
+	{
+	}
 
 	/**
 	 * Creates and initializes a new instance.
 	 *
-	 * @param Filename The full name and path of the file.
-	 * @param AutoDeleteFile Whether to delete the file when this attachment is destroyed.
+	 * @param InFilename The full name and path of the file.
+	 * @param InAutoDeleteFile Whether to delete the file when this attachment is destroyed.
 	 */
-	FSGFileMessageAttachment( const FString& InFilename, bool InAutoDeleteFile )
+	FSGFileMessageAttachment(const FString& InFilename, const bool InAutoDeleteFile)
 		: AutoDeleteFile(InAutoDeleteFile)
-		, Filename(InFilename)
-	{ }
+		  , Filename(InFilename)
+	{
+	}
 
 	/** Destructor. */
-	~FSGFileMessageAttachment()
+	virtual ~FSGFileMessageAttachment() override
 	{
 		if (AutoDeleteFile)
 		{
@@ -47,7 +48,6 @@ public:
 	}
 
 public:
-
 	// ISGMessageAttachment interface
 
 	virtual FArchive* CreateReader() override
@@ -56,7 +56,6 @@ public:
 	}
 
 private:
-
 	/** Holds a flag indicating whether the file should be deleted. */
 	bool AutoDeleteFile;
 

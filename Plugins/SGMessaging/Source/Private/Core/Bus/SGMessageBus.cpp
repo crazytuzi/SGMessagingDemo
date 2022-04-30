@@ -8,10 +8,6 @@
 #include "Core/Bus/SGMessageSubscription.h"
 #include "Core/Interface/ISGMessageSender.h"
 #include "Core/Interface/ISGMessageReceiver.h"
-#include "HAL/ThreadSingleton.h"
-
-
-
 
 
 /* FSGMessageBus structors
@@ -19,10 +15,11 @@
 
 FSGMessageBus::FSGMessageBus(FString InName, const TSharedPtr<ISGAuthorizeMessageRecipients>& InRecipientAuthorizer)
 	: Name(MoveTemp(InName))
-	, RecipientAuthorizer(InRecipientAuthorizer)
+	  , RecipientAuthorizer(InRecipientAuthorizer)
 {
 	Router = new FSGMessageRouter();
-	RouterThread = FRunnableThread::Create(Router, *FString::Printf(TEXT("FSGMessageBus.%s.Router"), *Name), 128 * 1024, TPri_Normal, FPlatformAffinity::GetPoolThreadMask());
+	RouterThread = FRunnableThread::Create(Router, *FString::Printf(TEXT("FSGMessageBus.%s.Router"), *Name), 128 * 1024,
+	                                       TPri_Normal, FPlatformAffinity::GetPoolThreadMask());
 
 	check(Router != nullptr);
 }
@@ -48,11 +45,11 @@ void FSGMessageBus::Forward(
 {
 	if (UE_GET_LOG_VERBOSITY(LogSGMessaging) >= ELogVerbosity::Verbose)
 	{
-		FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
+		const FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
 
 		UE_LOG(LogSGMessaging, Verbose, TEXT("Forwarding %s from %s to %s"),
-			*Context->GetMessageType().ToString(),
-			*Context->GetSender().ToString(), *RecipientStr);
+		       *Context->GetMessageTag().ToString(),
+		       *Context->GetSender().ToString(), *RecipientStr);
 	}
 
 	Router->RouteMessage(MakeShareable(new FSGMessageContext(
@@ -72,18 +69,19 @@ TSharedRef<ISGMessageTracer, ESPMode::ThreadSafe> FSGMessageBus::GetTracer()
 }
 
 
-void FSGMessageBus::Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+void FSGMessageBus::Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+                              const FName& MessageTag)
 {
-	if (MessageType == NAME_None)
+	if (MessageTag == NAME_None)
 	{
 		return;
 	}
 
-	if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeInterceptor(Interceptor, MessageType))
+	if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeInterceptor(Interceptor, MessageTag))
 	{
 		UE_LOG(LogSGMessaging, Verbose, TEXT("Adding invterceptor %s"), *Interceptor->GetDebugName().ToString());
-		Router->AddInterceptor(Interceptor, MessageType);
-	}			
+		Router->AddInterceptor(Interceptor, MessageTag);
+	}
 }
 
 
@@ -92,33 +90,6 @@ FOnMessageBusShutdown& FSGMessageBus::OnShutdown()
 	return ShutdownDelegate;
 }
 
-
-void FSGMessageBus::Publish(
-	void* Message,
-	UScriptStruct* TypeInfo,
-	ESGMessageScope Scope,
-	const TMap<FName, FString>& Annotations,
-	const FTimespan& Delay,
-	const FDateTime& Expiration,
-	const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher
-)
-{
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Publishing %s from sender %s"), *TypeInfo->GetName(), *Publisher->GetSenderAddress().ToString());
-
-	Router->RouteMessage(MakeShared<FSGMessageContext, ESPMode::ThreadSafe>(
-		Message,
-		TypeInfo,
-		Annotations,
-		nullptr,
-		Publisher->GetSenderAddress(),
-		TArray<FSGMessageAddress>(),
-		Scope,
-		ESGMessageFlags::None,
-		FDateTime::UtcNow() + Delay,
-		Expiration,
-		FTaskGraphInterface::Get().GetCurrentThreadIfKnown()
-	));
-}
 
 void FSGMessageBus::Publish(
 	const FName& MessageTag,
@@ -144,41 +115,13 @@ void FSGMessageBus::Publish(
 	));
 }
 
-void FSGMessageBus::Register(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
+void FSGMessageBus::Register(const FSGMessageAddress& Address,
+                             const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
 {
 	UE_LOG(LogSGMessaging, Verbose, TEXT("Registering %s"), *Address.ToString());
 	Router->AddRecipient(Address, Recipient);
 }
 
-
-void FSGMessageBus::Send(
-	void* Message,
-	UScriptStruct* TypeInfo,
-	ESGMessageFlags Flags,
-	const TMap<FName, FString>& Annotations,
-	const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment,
-	const TArray<FSGMessageAddress>& Recipients,
-	const FTimespan& Delay,
-	const FDateTime& Expiration,
-	const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender
-)
-{
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Sending %s to %d recipients"), *TypeInfo->GetName(), Recipients.Num());
-
-	Router->RouteMessage(MakeShared<FSGMessageContext, ESPMode::ThreadSafe>(
-		Message,
-		TypeInfo,
-		Annotations,
-		Attachment,
-		Sender->GetSenderAddress(),
-		Recipients,
-		ESGMessageScope::Network,
-		Flags,
-		FDateTime::UtcNow() + Delay,
-		Expiration,
-		FTaskGraphInterface::Get().GetCurrentThreadIfKnown()
-	));
-}
 
 void FSGMessageBus::Send(
 	const FName& MessageTag,
@@ -222,16 +165,17 @@ void FSGMessageBus::Shutdown()
 
 TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> FSGMessageBus::Subscribe(
 	const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
-	const FName& MessageType,
+	const FName& MessageTag,
 	const FSGMessageScopeRange& ScopeRange
 )
 {
-	if (MessageType != NAME_None)
+	if (MessageTag != NAME_None)
 	{
-		if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeSubscription(Subscriber, MessageType))
+		if (!RecipientAuthorizer.IsValid() || RecipientAuthorizer->AuthorizeSubscription(Subscriber, MessageTag))
 		{
 			UE_LOG(LogSGMessaging, Verbose, TEXT("Subscribing %s"), *Subscriber->GetDebugName().ToString());
-			TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe> Subscription = MakeShareable(new FSGMessageSubscription(Subscriber, MessageType, ScopeRange));
+			TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe> Subscription = MakeShareable(
+				new FSGMessageSubscription(Subscriber, MessageTag, ScopeRange));
 			Router->AddSubscription(Subscription);
 
 			return Subscription;
@@ -242,12 +186,13 @@ TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> FSGMessageBus::Subscribe
 }
 
 
-void FSGMessageBus::Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+void FSGMessageBus::Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+                                const FName& MessageTag)
 {
-	if (MessageType != NAME_None)
+	if (MessageTag != NAME_None)
 	{
 		UE_LOG(LogSGMessaging, Verbose, TEXT("Unintercepting %s"), *Interceptor->GetDebugName().ToString());
-		Router->RemoveInterceptor(Interceptor, MessageType);
+		Router->RemoveInterceptor(Interceptor, MessageTag);
 	}
 }
 
@@ -263,7 +208,8 @@ void FSGMessageBus::Unregister(const FSGMessageAddress& Address)
 }
 
 
-void FSGMessageBus::Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag)
+void FSGMessageBus::Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+                                const FName& MessageTag)
 {
 	if (MessageTag != NAME_None)
 	{

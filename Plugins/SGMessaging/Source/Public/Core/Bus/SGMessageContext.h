@@ -13,85 +13,45 @@
  * such as when the message was sent, who sent it and where it is being sent to.
  */
 
-class FSGMessageContext
+class FSGMessageContext final
 	: public ISGMessageContext
 {
 public:
-
 	/** Default constructor. */
 	FSGMessageContext()
 		: Message(nullptr)
-		, TypeInfo(nullptr)
-	{ }
+		  , Scope()
+		  , Flags()
+		  , SenderThread()
+	{
+	}
 
-	/**
-	 * Creates and initializes a new message context.
-	 *
-	 * This constructor overload is used for published and sent messages.
-	 *
-	 * @param InMessage The message payload.
-	 * @param InTypeInfo The message's type information.
-	 * @param InAnnotation The message header to attach to the message.
-	 * @param InAttachment The binary data to attach to the message.
-	 * @param InSender The sender's address.
-	 * @param InRecipients The message recipients.
-	 * @param InScope The message scope.
-	 * @param InFlags The message flags.
-	 * @param InTimeSent The time at which the message was sent.
-	 * @param InExpiration The message's expiration time.
-	 * @param InSenderThread The name of the thread from which the message was sent.
-	 */
 	FSGMessageContext(
+		const FName& InMessageTag,
 		void* InMessage,
-		UScriptStruct* InTypeInfo,
 		const TMap<FName, FString>& InAnnotations,
 		const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment,
 		const FSGMessageAddress& InSender,
 		const TArray<FSGMessageAddress>& InRecipients,
-		ESGMessageScope InScope,
-		ESGMessageFlags InFlags,
+		const ESGMessageScope InScope,
+		const ESGMessageFlags InFlags,
 		const FDateTime& InTimeSent,
 		const FDateTime& InExpiration,
-		ENamedThreads::Type InSenderThread
+		const ENamedThreads::Type InSenderThread
 	)
 		: Annotations(InAnnotations)
-		, Attachment(InAttachment)
-		, Expiration(InExpiration)
-		, Message(InMessage)
-		, Recipients(InRecipients)
-		, Scope(InScope)
-		, Flags(InFlags)
-		, Sender(InSender)
-		, SenderThread(InSenderThread)
-		, TimeSent(InTimeSent)
-		, TypeInfo(InTypeInfo)
-	{ }
-
-	FSGMessageContext(
-	const FName& InMessageTag,
-	void* InMessage,
-	const TMap<FName, FString>& InAnnotations,
-	const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment,
-	const FSGMessageAddress& InSender,
-	const TArray<FSGMessageAddress>& InRecipients,
-	ESGMessageScope InScope,
-	ESGMessageFlags InFlags,
-	const FDateTime& InTimeSent,
-	const FDateTime& InExpiration,
-	ENamedThreads::Type InSenderThread
-)
-	: Annotations(InAnnotations)
-	, Attachment(InAttachment)
-	, Expiration(InExpiration)
-	, MessageTag(InMessageTag)
-	, Message(InMessage)
-	, Recipients(InRecipients)
-	, Scope(InScope)
-	, Flags(InFlags)
-	, Sender(InSender)
-	, SenderThread(InSenderThread)
-	, TimeSent(InTimeSent)
-	{ }
+		  , Attachment(InAttachment)
+		  , Expiration(InExpiration)
+		  , MessageTag(InMessageTag)
+		  , Message(InMessage)
+		  , Recipients(InRecipients)
+		  , Scope(InScope)
+		  , Flags(InFlags)
+		  , Sender(InSender)
+		  , SenderThread(InSenderThread)
+		  , TimeSent(InTimeSent)
+	{
+	}
 
 	/**
 	 * Creates and initializes a new message context from an existing context.
@@ -109,32 +69,31 @@ public:
 		const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& InContext,
 		const FSGMessageAddress& InForwarder,
 		const TArray<FSGMessageAddress>& NewRecipients,
-		ESGMessageScope NewScope,
+		const ESGMessageScope NewScope,
 		const FDateTime& InTimeForwarded,
-		ENamedThreads::Type InForwarderThread
+		const ENamedThreads::Type InForwarderThread
 	)
 		: Message(nullptr)
-		, OriginalContext(InContext)
-		, Recipients(NewRecipients)
-		, Scope(NewScope)
-		, Flags(ESGMessageFlags::None)
-		, Sender(InForwarder)
-		, SenderThread(InForwarderThread)
-		, TimeSent(InTimeForwarded)
-	{ }
+		  , OriginalContext(InContext)
+		  , Recipients(NewRecipients)
+		  , Scope(NewScope)
+		  , Flags(ESGMessageFlags::None)
+		  , Sender(InForwarder)
+		  , SenderThread(InForwarderThread)
+		  , TimeSent(InTimeForwarded)
+	{
+	}
 
 	/** Destructor. */
 	virtual ~FSGMessageContext() override;
 
 public:
-
 	//~ ISGMessageContext interface
 
 	virtual const TMap<FName, FString>& GetAnnotations() const override;
 	virtual TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe> GetAttachment() const override;
 	virtual const FDateTime& GetExpiration() const override;
 	virtual const void* GetMessage() const override;
-	virtual const TWeakObjectPtr<UScriptStruct>& GetMessageTypeInfo() const override;
 	virtual TSharedPtr<ISGMessageContext, ESPMode::ThreadSafe> GetOriginalContext() const override;
 	virtual const TArray<FSGMessageAddress>& GetRecipients() const override;
 	virtual ESGMessageScope GetScope() const override;
@@ -144,10 +103,9 @@ public:
 	virtual ENamedThreads::Type GetSenderThread() const override;
 	virtual const FDateTime& GetTimeForwarded() const override;
 	virtual const FDateTime& GetTimeSent() const override;
-	virtual FName GetMessageType() const override;
+	virtual FName GetMessageTag() const override;
 
 private:
-
 	/** Holds the optional message annotations. */
 	TMap<FName, FString> Annotations;
 
@@ -182,7 +140,4 @@ private:
 
 	/** Holds the time at which the message was sent. */
 	FDateTime TimeSent;
-
-	/** Holds the message's type information. */
-	TWeakObjectPtr<UScriptStruct> TypeInfo;
 };

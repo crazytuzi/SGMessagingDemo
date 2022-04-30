@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class SGMESSAGING_API USGMessageFunctionLibrary : public UBlueprintFunctionLibrary
+class SGMESSAGING_API USGMessageFunctionLibrary final : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

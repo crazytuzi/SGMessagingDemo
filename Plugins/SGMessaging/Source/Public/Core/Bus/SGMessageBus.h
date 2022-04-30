@@ -18,37 +18,37 @@ class ISGMessageSender;
 /**
  * Implements a message bus.
  */
-class FSGMessageBus
+class FSGMessageBus final
 	: public TSharedFromThis<FSGMessageBus, ESPMode::ThreadSafe>
-	, public ISGMessageBus
+	  , public ISGMessageBus
 {
 public:
-	
 	/**
 	 * Creates and initializes a new instance.
 	 *
-	 * @param InDebugName The debug name of this message bus.
+	 * @param InName The debug name of this message bus.
 	 * @param InRecipientAuthorizer An optional recipient authorizer.
 	 */
 	FSGMessageBus(FString InName, const TSharedPtr<ISGAuthorizeMessageRecipients>& InRecipientAuthorizer);
 
 	/** Virtual destructor. */
-	virtual ~FSGMessageBus();
+	virtual ~FSGMessageBus() override;
 
 public:
-
 	//~ ISGMessageBus interface
 
-	virtual void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Forwarder) override;
+	virtual void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                     const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay,
+	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Forwarder) override;
 	virtual TSharedRef<ISGMessageTracer, ESPMode::ThreadSafe> GetTracer() override;
-	virtual void Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) override;
+	virtual void Intercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                       const FName& MessageTag) override;
 	virtual FOnMessageBusShutdown& OnShutdown() override;
-	virtual void Publish(void* Message, UScriptStruct* TypeInfo, ESGMessageScope Scope, const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) override;
 	virtual void Publish(const FName& MessageTag, void* Message, ESGMessageScope Scope,
 	                     const TMap<FName, FString>& Annotations, const FTimespan& Delay, const FDateTime& Expiration,
 	                     const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Publisher) override;
-	virtual void Register(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient) override;
-	virtual void Send(void* Message, UScriptStruct* TypeInfo, ESGMessageFlags Flags, const TMap<FName, FString>& Annotations, const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& Attachment, const TArray<FSGMessageAddress>& Recipients, const FTimespan& Delay, const FDateTime& Expiration, const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) override;
+	virtual void Register(const FSGMessageAddress& Address,
+	                      const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient) override;
 	virtual void Send(const FName& MessageTag,
 	                  void* Message,
 	                  const TArray<FSGMessageAddress>& Recipients,
@@ -59,11 +59,14 @@ public:
 	                  const FDateTime& Expiration,
 	                  const TSharedRef<ISGMessageSender, ESPMode::ThreadSafe>& Sender) override;
 	virtual void Shutdown() override;
-	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType, const FSGMessageScopeRange& ScopeRange) override;
-	virtual void Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) override;
+	virtual TSharedPtr<ISGMessageSubscription, ESPMode::ThreadSafe> Subscribe(
+		const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag,
+		const FSGMessageScopeRange& ScopeRange) override;
+	virtual void Unintercept(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                         const FName& MessageTag) override;
 	virtual void Unregister(const FSGMessageAddress& Address) override;
-	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageTag) override;
-
+	virtual void Unsubscribe(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+	                         const FName& MessageTag) override;
 	virtual void AddNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener) override;
 	virtual void RemoveNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener) override;
 	virtual const FString& GetName() const override;

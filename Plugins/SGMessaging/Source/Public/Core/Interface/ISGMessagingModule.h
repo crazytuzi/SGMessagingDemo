@@ -29,7 +29,7 @@ class ISGMessagingModule
 
 public:
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnMessageBusStartupOrShutdown, FSGMessageBusWeakPtr);
-	
+
 	/** Event triggered when a message bus is started. */
 	virtual FOnMessageBusStartupOrShutdown& OnMessageBusStartup() = 0;
 
@@ -48,7 +48,9 @@ public:
 	 * @return The new message bridge, or nullptr if the bridge couldn't be created.
 	 * @see CreateBus
 	 */
-	virtual TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe> CreateBridge(const FSGMessageAddress& Address, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& Bus, const TSharedRef<ISGMessageTransport, ESPMode::ThreadSafe>& Transport) = 0;
+	virtual TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe> CreateBridge(
+		const FSGMessageAddress& Address, const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& Bus,
+		const TSharedRef<ISGMessageTransport, ESPMode::ThreadSafe>& Transport) = 0;
 
 	/**
 	 * Creates a new message bus.
@@ -57,7 +59,8 @@ public:
 	 * @return The new message bus, or nullptr if the bus couldn't be created.
 	 * @see CreateBridge
 	 */
-	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> CreateBus(const TSharedPtr<ISGAuthorizeMessageRecipients>& RecipientAuthorizer = nullptr) = 0;
+	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> CreateBus(
+		const TSharedPtr<ISGAuthorizeMessageRecipients>& RecipientAuthorizer = nullptr) = 0;
 
 	/**
 	 * Creates a new message bus.
@@ -67,7 +70,9 @@ public:
 	 * @return The new message bus, or nullptr if the bus couldn't be created.
 	 * @see CreateBridge
 	 */
-	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> CreateBus(FString InName, const TSharedPtr<ISGAuthorizeMessageRecipients>& RecipientAuthorizer = nullptr) = 0;
+	virtual TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> CreateBus(FString InName,
+	                                                                 const TSharedPtr<ISGAuthorizeMessageRecipients>&
+		                                                                 RecipientAuthorizer = nullptr) = 0;
 
 	/**
 	 * Gets all message buses that were created by this module via the #CreateBus method
@@ -78,7 +83,6 @@ public:
 	virtual TArray<TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>> GetAllBuses() const = 0;
 
 public:
-
 	/**
 	 * Gets a reference to the messaging module instance.
 	 *
@@ -91,12 +95,13 @@ public:
         static ISGMessagingModule& MessageModule = FModuleManager::LoadModuleChecked<ISGMessagingModule>("SGMessaging");
         return MessageModule;
 #else
-        return FModuleManager::LoadModuleChecked<ISGMessagingModule>("SGMessaging");
+		return FModuleManager::LoadModuleChecked<ISGMessagingModule>("SGMessaging");
 #endif
 	}
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessagingModule() { }
+	virtual ~ISGMessagingModule() override
+	{
+	}
 };

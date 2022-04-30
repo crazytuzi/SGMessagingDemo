@@ -21,31 +21,31 @@ enum class ESGMessageBusNotification : uint8;
 /**
  * Implements a topic-based message router.
  */
-class FSGMessageRouter
+class FSGMessageRouter final
 	: public FRunnable
-	, private FSingleThreadRunnable
+	  , FSingleThreadRunnable
 {
-	DECLARE_DELEGATE(CommandDelegate)
+	DECLARE_DELEGATE(FCommandDelegate)
 
 public:
-
 	/** Default constructor. */
 	FSGMessageRouter();
 
 	/** Destructor. */
-	~FSGMessageRouter();
+	virtual ~FSGMessageRouter() override;
 
 public:
-
 	/**
 	 * Adds a message interceptor.
 	 *
 	 * @param Interceptor The interceptor to add.
-	 * @param MessageType The type of messages to intercept.
+	 * @param MessageTag The type of messages to intercept.
 	 */
-	FORCEINLINE void AddInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+	FORCEINLINE void AddInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                                const FName& MessageTag)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddInterceptor, Interceptor, MessageType));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddInterceptor, Interceptor,
+		                                          MessageTag));
 	}
 
 	/**
@@ -54,9 +54,11 @@ public:
 	 * @param Address The address of the recipient to add.
 	 * @param Recipient The recipient.
 	 */
-	FORCEINLINE void AddRecipient(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
+	FORCEINLINE void AddRecipient(const FSGMessageAddress& Address,
+	                              const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddRecipient, Address, TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe>(Recipient)));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddRecipient, Address,
+		                                          TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe>(Recipient)));
 	}
 
 	/**
@@ -83,11 +85,13 @@ public:
 	 * Removes a message interceptor.
 	 *
 	 * @param Interceptor The interceptor to remove.
-	 * @param MessageType The type of messages to stop intercepting.
+	 * @param MessageTag The type of messages to stop intercepting.
 	 */
-	FORCEINLINE void RemoveInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+	FORCEINLINE void RemoveInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                                   const FName& MessageTag)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveInterceptor, Interceptor, MessageType));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveInterceptor, Interceptor,
+		                                          MessageTag));
 	}
 
 	/**
@@ -104,11 +108,14 @@ public:
 	 * Removes a subscription.
 	 *
 	 * @param Subscriber The subscriber to stop routing messages to.
-	 * @param MessageType The type of message to unsubscribe from (NAME_None = all types).
+	 * @param MessageTag The type of message to unsubscribe from (NAME_None = all types).
 	 */
-	FORCEINLINE void RemoveSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& MessageType)
+	FORCEINLINE void RemoveSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+	                                    const FName& MessageTag)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveSubscriber, TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe>(Subscriber), MessageType));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveSubscriber,
+		                                          TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe>(Subscriber),
+		                                          MessageTag));
 	}
 
 	/**
@@ -129,7 +136,8 @@ public:
 	 */
 	FORCEINLINE void AddNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddListener, TWeakPtr<ISGBusListener, ESPMode::ThreadSafe>(Listener)));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleAddListener,
+		                                          TWeakPtr<ISGBusListener, ESPMode::ThreadSafe>(Listener)));
 	}
 
 	/**
@@ -139,11 +147,11 @@ public:
 	 */
 	FORCEINLINE void RemoveNotificationListener(const TSharedRef<ISGBusListener, ESPMode::ThreadSafe>& Listener)
 	{
-		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveListener, TWeakPtr<ISGBusListener, ESPMode::ThreadSafe>(Listener)));
+		EnqueueCommand(FSimpleDelegate::CreateRaw(this, &FSGMessageRouter::HandleRemoveListener,
+		                                          TWeakPtr<ISGBusListener, ESPMode::ThreadSafe>(Listener)));
 	}
 
 public:
-
 	//~ FRunnable interface
 
 	virtual FSingleThreadRunnable* GetSingleThreadInterface() override;
@@ -153,7 +161,6 @@ public:
 	virtual void Exit() override;
 
 protected:
-
 	/**
 	 * Calculates the time that the thread will wait for new work.
 	 *
@@ -167,7 +174,7 @@ protected:
 	 * @param Command The command to queue up.
 	 * @return true if the command was enqueued, false otherwise.
 	 */
-	FORCEINLINE bool EnqueueCommand(CommandDelegate Command)
+	FORCEINLINE bool EnqueueCommand(const FCommandDelegate Command)
 	{
 		if (!Commands.Enqueue(Command))
 		{
@@ -204,9 +211,9 @@ protected:
 	/**
 	 * Dispatches a single message to its recipients.
 	 *
-	 * @param Message The message to dispatch.
+	 * @param Context The content to dispatch.
 	 */
-	void DispatchMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Message);
+	void DispatchMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
 	/**
 	 * Process all queued commands.
@@ -223,13 +230,11 @@ protected:
 	void ProcessDelayedMessages();
 
 protected:
-
 	//~ FSingleThreadRunnable interface
 
 	virtual void Tick() override;
 
 private:
-
 	/** Structure for delayed messages. */
 	struct FSGDelayedMessage
 	{
@@ -241,13 +246,17 @@ private:
 
 
 		/** Default constructor. */
-		FSGDelayedMessage() { }
+		FSGDelayedMessage()
+			: Sequence(0)
+		{
+		}
 
 		/** Creates and initializes a new instance. */
-		FSGDelayedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& InContext, int64 InSequence)
+		FSGDelayedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& InContext, const int64 InSequence)
 			: Context(InContext)
-			, Sequence(InSequence)
-		{ }
+			  , Sequence(InSequence)
+		{
+		}
 
 		/** Comparison operator for heap sorting. */
 		bool operator<(const FSGDelayedMessage& Other) const
@@ -264,9 +273,8 @@ private:
 	};
 
 private:
-
 	/** Handles adding message interceptors. */
-	void HandleAddInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageType);
+	void HandleAddInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageTag);
 
 	/** Handles adding message recipients. */
 	void HandleAddRecipient(FSGMessageAddress Address, TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> RecipientPtr);
@@ -275,13 +283,13 @@ private:
 	void HandleAddSubscriber(TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe> Subscription);
 
 	/** Handles the removal of message interceptors. */
-	void HandleRemoveInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageType);
+	void HandleRemoveInterceptor(TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe> Interceptor, FName MessageTag);
 
 	/** Handles the removal of message recipients. */
 	void HandleRemoveRecipient(FSGMessageAddress Address);
 
 	/** Handles the removal of subscribers. */
-	void HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> SubscriberPtr, FName MessageType);
+	void HandleRemoveSubscriber(TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> SubscriberPtr, FName MessageTag);
 
 	/** Handles the routing of messages. */
 	void HandleRouteMessage(TSharedRef<ISGMessageContext, ESPMode::ThreadSafe> Context);
@@ -296,7 +304,6 @@ private:
 	void NotifyRegistration(const FSGMessageAddress& Address, ESGMessageBusNotification Notification);
 
 private:
-
 	/** Maps message types to interceptors. */
 	TMap<FName, TArray<TSharedPtr<ISGMessageInterceptor, ESPMode::ThreadSafe>>> ActiveInterceptors;
 
@@ -310,7 +317,7 @@ private:
 	TArray<TWeakPtr<ISGBusListener, ESPMode::ThreadSafe>> ActiveRegistrationListeners;
 
 	/** Holds the router command queue. */
-	TQueue<CommandDelegate, EQueueMode::Mpsc> Commands;
+	TQueue<FCommandDelegate, EQueueMode::Mpsc> Commands;
 
 	/** Holds the current time. */
 	FDateTime CurrentTime;

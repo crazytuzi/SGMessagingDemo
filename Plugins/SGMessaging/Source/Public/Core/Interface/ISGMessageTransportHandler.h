@@ -31,7 +31,6 @@ struct FGuid;
 class ISGMessageTransportHandler
 {
 public:
-
 	/**
 	 * Called by message transports when a transport node has been discovered.
 	 *
@@ -54,10 +53,12 @@ public:
 	 * @param Context The context of the received message.
 	 * @param NodeId The identifier of the transport node that received the message.
 	 */
-	virtual void ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FGuid& NodeId) = 0;
+	virtual void ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                                     const FGuid& NodeId) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageTransportHandler() { }
+	virtual ~ISGMessageTransportHandler()
+	{
+	}
 };

@@ -15,7 +15,6 @@ struct FGuid;
 class ISGMessageInterceptor
 {
 public:
-
 	/**
 	 * Gets the interceptor's name (for debugging purposes).
 	 *
@@ -41,7 +40,8 @@ public:
 	virtual bool InterceptMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageInterceptor() { }
+	virtual ~ISGMessageInterceptor()
+	{
+	}
 };

@@ -16,7 +16,6 @@ class ISGMessageReceiver;
 class FSGMessageDispatchTask
 {
 public:
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
@@ -32,21 +31,20 @@ public:
 		TSharedPtr<FSGMessageTracer, ESPMode::ThreadSafe> InTracer);
 
 public:
-
 	/**
 	 * Performs the actual task.
 	 *
 	 * @param CurrentThread The thread that this task is executing on.
 	 * @param MyCompletionGraphEvent The completion event.
 	 */
-	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent);
-	
+	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) const;
+
 	/**
 	 * Returns the name of the thread that this task should run on.
 	 *
 	 * @return Thread name.
 	 */
-	ENamedThreads::Type GetDesiredThread()
+	ENamedThreads::Type GetDesiredThread() const
 	{
 		return Thread;
 	}
@@ -63,13 +61,12 @@ public:
 	 *
 	 * @return Always track subsequent tasks.
 	 */
-	static ESubsequentsMode::Type GetSubsequentsMode() 
-	{ 
-		return ESubsequentsMode::TrackSubsequents; 
+	static ESubsequentsMode::Type GetSubsequentsMode()
+	{
+		return ESubsequentsMode::TrackSubsequents;
 	}
 
 private:
-
 	/** Holds the message context. */
 	TSharedRef<ISGMessageContext, ESPMode::ThreadSafe> Context;
 
@@ -90,7 +87,6 @@ private:
 class FSGBusNotificationDispatchTask
 {
 public:
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
@@ -100,32 +96,32 @@ public:
 	 * @param InNotification The notification type being notified.
 	 */
 	FSGBusNotificationDispatchTask(
-		ENamedThreads::Type InThread,
-		TWeakPtr<ISGBusListener, ESPMode::ThreadSafe> InListener,
-		FSGMessageAddress InAddress,
-		ESGMessageBusNotification InNotification)
+		const ENamedThreads::Type InThread,
+		const TWeakPtr<ISGBusListener, ESPMode::ThreadSafe> InListener,
+		const FSGMessageAddress InAddress,
+		const ESGMessageBusNotification InNotification)
 		: Thread(InThread)
-		, ListenerPtr(InListener)
-		, Address(InAddress)
-		, Notification(InNotification)
-	{}
+		  , ListenerPtr(InListener)
+		  , Address(InAddress)
+		  , Notification(InNotification)
+	{
+	}
 
 public:
-
 	/**
 	 * Performs the actual task.
 	 *
 	 * @param CurrentThread The thread that this task is executing on.
 	 * @param MyCompletionGraphEvent The completion event.
 	 */
-	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent);
+	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) const;
 
 	/**
 	 * Returns the name of the thread that this task should run on.
 	 *
 	 * @return Thread name.
 	 */
-	ENamedThreads::Type GetDesiredThread()
+	ENamedThreads::Type GetDesiredThread() const
 	{
 		return Thread;
 	}

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreTypes.h"
 #include "Templates/SharedPointer.h"
 
 class FName;
@@ -18,15 +17,15 @@ struct FSGMessageAddress;
 class ISGAuthorizeMessageRecipients
 {
 public:
-
 	/**
 	 * Authorizes a request to intercept messages of the specified type.
 	 *
 	 * @param Interceptor The message interceptor to authorize.
-	 * @param MessageType The type of messages to intercept.
+	 * @param MessageTag The type of messages to intercept.
 	 * @return true if the request was authorized, false otherwise.
 	 */
-	virtual bool AuthorizeInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType) = 0;
+	virtual bool AuthorizeInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                                  const FName& MessageTag) = 0;
 
 	/**
 	 * Authorizes a request to register the specified recipient.
@@ -35,16 +34,18 @@ public:
 	 * @param Address The recipient's address.
 	 * @return true if the request was authorized, false otherwise.
 	 */
-	virtual bool AuthorizeRegistration(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient, const FSGMessageAddress& Address) = 0;
+	virtual bool AuthorizeRegistration(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient,
+	                                   const FSGMessageAddress& Address) = 0;
 
 	/**
 	 * Authorizes a request to add a subscription for the specified topic pattern.
 	 *
 	 * @param Subscriber The subscriber.
-	 * @param TopicPattern The message topic pattern to subscribe to.
+	 * @param MessageTag The message topic pattern to subscribe to.
 	 * @return true if the request is authorized, false otherwise.
 	 */
-	virtual bool AuthorizeSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& TopicPattern) = 0;
+	virtual bool AuthorizeSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+	                                   const FName& MessageTag) = 0;
 
 	/**
 	 * Authorizes a request to unregister the specified recipient.
@@ -61,10 +62,12 @@ public:
 	 * @param TopicPattern The message topic pattern to unsubscribe from.
 	 * @return true if the request is authorized, false otherwise.
 	 */
-	virtual bool AuthorizeUnsubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber, const FName& TopicPattern) = 0;
+	virtual bool AuthorizeUnsubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Subscriber,
+	                                     const FName& TopicPattern) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGAuthorizeMessageRecipients() { }
+	virtual ~ISGAuthorizeMessageRecipients()
+	{
+	}
 };

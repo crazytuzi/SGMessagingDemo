@@ -202,7 +202,6 @@ struct FSGMessageTracerTypeInfo
 class ISGMessageTracer
 {
 public:
-
 	/**
 	 * Breaks message routing.
 	 *
@@ -259,7 +258,6 @@ public:
 	virtual bool Tick(float DeltaTime) = 0;
 
 public:
-
 	/**
 	 * Gets the list of known message endpoints.
 	 *
@@ -281,7 +279,7 @@ public:
 	 * @param OutTypes Will contain the list of message types.
 	 * @return The number of message types returned.
 	 */
-	virtual int32 GetMessageTypes(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const = 0;
+	virtual int32 GetMessageTags(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const = 0;
 
 	/**
 	 * Checks whether there are any messages in the history.
@@ -291,7 +289,6 @@ public:
 	virtual bool HasMessages() const = 0;
 
 public:
-
 	typedef TSharedRef<FSGMessageTracerMessageInfo> FSGMessageTracerMessageInfoRef;
 	typedef TSharedRef<FSGMessageTracerTypeInfo> FSGMessageTracerTypeInfoRef;
 
@@ -301,6 +298,7 @@ public:
 	 * @return The delegate.
 	 */
 	DECLARE_EVENT_OneParam(ISGMessageTracer, FOnMessageAdded, FSGMessageTracerMessageInfoRef)
+
 	virtual FOnMessageAdded& OnMessageAdded() = 0;
 
 	/**
@@ -309,6 +307,7 @@ public:
 	 * @return The delegate.
 	 */
 	DECLARE_EVENT(ISGMessageTracer, FOnMessagesReset)
+
 	virtual FOnMessagesReset& OnMessagesReset() = 0;
 
 	/**
@@ -317,10 +316,12 @@ public:
 	 * @return The delegate.
 	 */
 	DECLARE_EVENT_OneParam(ISGMessageTracer, FOnTypeAdded, FSGMessageTracerTypeInfoRef)
+
 	virtual FOnTypeAdded& OnTypeAdded() = 0;
 
 protected:
-
 	/** Hidden destructor. The life time of a message tracer is managed by the message bus. */
-	virtual ~ISGMessageTracer() { }
+	virtual ~ISGMessageTracer()
+	{
+	}
 };

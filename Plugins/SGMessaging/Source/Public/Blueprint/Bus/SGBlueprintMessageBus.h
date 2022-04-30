@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class SGMESSAGING_API USGBlueprintMessageBus : public UObject
+class SGMESSAGING_API USGBlueprintMessageBus final : public UObject
 {
 	GENERATED_BODY()
 

@@ -23,7 +23,6 @@ class FArchive;
 class ISGMessageAttachment
 {
 public:
-
 	/**
 	 * Creates an archive reader to the data.
 	 *
@@ -34,7 +33,8 @@ public:
 	virtual FArchive* CreateReader() = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageAttachment() { }
+	virtual ~ISGMessageAttachment()
+	{
+	}
 };

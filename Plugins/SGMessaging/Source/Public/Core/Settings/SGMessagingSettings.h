@@ -10,7 +10,7 @@
  * 
  */
 UCLASS(Config = Game, Defaultconfig)
-class SGMESSAGING_API USGMessagingSettings : public UObject
+class SGMESSAGING_API USGMessagingSettings final : public UObject
 {
 	GENERATED_BODY()
 

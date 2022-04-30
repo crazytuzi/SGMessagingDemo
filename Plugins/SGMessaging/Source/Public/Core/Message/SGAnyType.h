@@ -60,11 +60,13 @@ class FSGAnyType
 {
 public:
 	/** Default constructor. */
-	FSGAnyType(): Type(ESGAnyTypes::Empty)
+	FSGAnyType()
+		: Type(ESGAnyTypes::Empty)
 	{
 	}
 
-	FSGAnyType(const ESGAnyTypes InType): Type(InType)
+	FSGAnyType(const ESGAnyTypes InType)
+		: Type(InType)
 	{
 	}
 
@@ -74,7 +76,8 @@ public:
 
 	~FSGAnyType() = default;
 
-	FSGAnyType(FSGAnyType&& Other) noexcept : Type(Other.Type)
+	FSGAnyType(FSGAnyType&& Other) noexcept
+		: Type(Other.Type)
 	{
 		Other.Type = ESGAnyTypes::Empty;
 	}

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Containers/Array.h"
 #include "Misc/Guid.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/NameTypes.h"
@@ -20,7 +19,6 @@ class ISGMessageTransportHandler;
 class ISGMessageTransport
 {
 public:
-
 	/**
 	 * Gets the name of this transport (for debugging purposes).
 	 *
@@ -51,10 +49,12 @@ public:
 	 * @param Recipients The transport nodes to send the message to.
 	 * @return true if the message is being transported, false otherwise.
 	 */
-	virtual bool TransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TArray<FGuid>& Recipients) = 0;
+	virtual bool TransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                              const TArray<FGuid>& Recipients) = 0;
 
 protected:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageTransport() { }
+	virtual ~ISGMessageTransport()
+	{
+	}
 };

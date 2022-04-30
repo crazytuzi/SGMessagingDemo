@@ -17,26 +17,25 @@ class ISGMessageTracerBreakpoint;
 /**
  * Implements a message bus tracers.
  */
-class FSGMessageTracer
+class FSGMessageTracer final
 	: public ISGMessageTracer
 {
 public:
-
 	/** Default constructor. */
 	FSGMessageTracer();
 
 	/** Virtual destructor. */
-	virtual ~FSGMessageTracer();
+	virtual ~FSGMessageTracer() override;
 
 public:
-
 	/**
 	 * Notifies the tracer that a message interceptor has been added to the message bus.
 	 *
 	 * @param Interceptor The added interceptor.
-	 * @param MessageType The type of messages being intercepted.
+	 * @param MessageTag The type of messages being intercepted.
 	 */
-	void TraceAddedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType);
+	void TraceAddedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                           const FName& MessageTag);
 
 	/**
 	 * Notifies the tracer that a message recipient has been added to the message bus.
@@ -44,7 +43,8 @@ public:
 	 * @param Address The address of the added recipient.
 	 * @param Recipient The added recipient.
 	 */
-	void TraceAddedRecipient(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient);
+	void TraceAddedRecipient(const FSGMessageAddress& Address,
+	                         const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient);
 
 	/**
 	 * Notifies the tracer that a message subscription has been added to the message bus.
@@ -60,7 +60,8 @@ public:
 	 * @param Recipient The message recipient.
 	 * @param Async Whether the message was dispatched asynchronously.
 	 */
-	void TraceDispatchedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient, bool Async);
+	void TraceDispatchedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                            const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient, bool Async);
 
 	/**
 	 * Notifies the tracer that a message has been handled.
@@ -68,7 +69,8 @@ public:
 	 * @param Context The context of the dispatched message.
 	 * @param Recipient The message recipient that handled the message.
 	 */
-	void TraceHandledMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient);
+	void TraceHandledMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                         const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient);
 
 	/**
 	 * Notifies the tracer that a message has been intercepted.
@@ -76,15 +78,17 @@ public:
 	 * @param Context The context of the intercepted message.
 	 * @param Interceptor The interceptor.
 	 */
-	void TraceInterceptedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor);
+	void TraceInterceptedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                             const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor);
 
 	/**
 	 * Notifies the tracer that a message interceptor has been removed from the message bus.
 	 *
 	 * @param Interceptor The removed interceptor.
-	 * @param MessageType The type of messages that is no longer being intercepted.
+	 * @param MessageTag The type of messages that is no longer being intercepted.
 	 */
-	void TraceRemovedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType);
+	void TraceRemovedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+	                             const FName& MessageTag);
 
 	/**
 	 * Notifies the tracer that a recipient has been removed from the message bus.
@@ -96,10 +100,11 @@ public:
 	/**
 	 * Notifies the tracer that a message subscription has been removed from the message bus.
 	 *
-	 * @param Subscriber The removed subscriber.
-	 * @param MessageType The type of messages no longer being subscribed to.
+	 * @param Subscription The removed subscriber.
+	 * @param MessageTag The type of messages no longer being subscribed to.
 	 */
-	void TraceRemovedSubscription(const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription, const FName& MessageType);
+	void TraceRemovedSubscription(const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription,
+	                              const FName& MessageTag);
 
 	/**
 	 * Notifies the tracer that a message has been routed.
@@ -116,31 +121,33 @@ public:
 	void TraceSentMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context);
 
 public:
-
 	//~ ISGMessageTracer interface
 
 	virtual void Break() override;
 	virtual void Continue() override;
 	virtual int32 GetEndpoints(TArray<TSharedPtr<FSGMessageTracerEndpointInfo>>& OutEndpoints) const override;
 	virtual int32 GetMessages(TArray<TSharedPtr<FSGMessageTracerMessageInfo>>& OutMessages) const override;
-	virtual int32 GetMessageTypes(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const override;
+	virtual int32 GetMessageTags(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const override;
 	virtual bool HasMessages() const override;
 	virtual bool IsBreaking() const override;
 	virtual bool IsRunning() const override;
 
 	DECLARE_DERIVED_EVENT(FSGMessageTracer, ISGMessageTracer::FOnMessageAdded, FOnMessageAdded)
+
 	virtual FOnMessageAdded& OnMessageAdded() override
 	{
 		return MessagesAddedDelegate;
 	}
 
 	DECLARE_DERIVED_EVENT(FSGMessageTracer, ISGMessageTracer::FOnMessagesReset, FOnMessagesReset)
+
 	virtual FOnMessagesReset& OnMessagesReset() override
 	{
 		return MessagesResetDelegate;
 	}
 
 	DECLARE_DERIVED_EVENT(FSGMessageTracer, ISGMessageTracer::FOnTypeAdded, FOnTypeAdded)
+
 	virtual FOnTypeAdded& OnTypeAdded() override
 	{
 		return TypeAddedDelegate;
@@ -148,11 +155,10 @@ public:
 
 	virtual void Reset() override;
 	virtual void Step() override;
-	virtual void Stop();
+	virtual void Stop() override;
 	virtual bool Tick(float DeltaTime) override;
 
 protected:
-
 	/** Resets traced messages. */
 	void ResetMessages();
 
@@ -164,7 +170,6 @@ protected:
 	bool ShouldBreak(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) const;
 
 private:
-
 	/** Holds the collection of endpoints for known message addresses. */
 	TMap<FSGMessageAddress, TSharedPtr<FSGMessageTracerEndpointInfo>> AddressesToEndpointInfos;
 
@@ -187,7 +192,7 @@ private:
 	TMap<TSharedPtr<ISGMessageContext, ESPMode::ThreadSafe>, TSharedPtr<FSGMessageTracerMessageInfo>> MessageInfos;
 
 	/** Holds the collection of known message types. */
-	TMap<FName, TSharedPtr<FSGMessageTracerTypeInfo>> MessageTypes;
+	TMap<FName, TSharedPtr<FSGMessageTracerTypeInfo>> MessageTags;
 
 	/** Holds a flag indicating whether a reset is pending. */
 	bool ResetPending;
@@ -202,7 +207,6 @@ private:
 	TQueue<TFunction<void()>, EQueueMode::Mpsc> Traces;
 
 private:
-
 	/** Holds a delegate that is executed when a new message has been added to the collection of known messages. */
 	FOnMessageAdded MessagesAddedDelegate;
 

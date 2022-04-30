@@ -16,10 +16,10 @@ FSGMessageBridge::FSGMessageBridge(
 	const TSharedRef<ISGMessageTransport, ESPMode::ThreadSafe>& InTransport
 )
 	: Address(InAddress)
-	, Bus(InBus)
-	, Enabled(false)
-	, Id(FGuid::NewGuid())
-	, Transport(InTransport)
+	  , Bus(InBus)
+	  , Enabled(false)
+	  , Id(FGuid::NewGuid())
+	  , Transport(InTransport)
 {
 	Bus->OnShutdown().AddRaw(this, &FSGMessageBridge::HandleMessageBusShutdown);
 }
@@ -48,7 +48,7 @@ FSGMessageBridge::~FSGMessageBridge()
 /* ISGMessageBridge interface
  *****************************************************************************/
 
-void FSGMessageBridge::Disable() 
+void FSGMessageBridge::Disable()
 {
 	if (!Enabled)
 	{
@@ -91,7 +91,8 @@ void FSGMessageBridge::Enable()
 	}
 	else
 	{
-		MessageSubscription = Bus->Subscribe(AsShared(), NAME_All, FSGMessageScopeRange::AtLeast(ESGMessageScope::Network));
+		MessageSubscription = Bus->Subscribe(AsShared(), NAME_All,
+		                                     FSGMessageScopeRange::AtLeast(ESGMessageScope::Network));
 	}
 
 	Enabled = true;
@@ -133,7 +134,8 @@ bool FSGMessageBridge::IsLocal() const
 
 void FSGMessageBridge::ReceiveMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context)
 {
-	UE_LOG(LogSGMessaging, Verbose, TEXT("Received %s message from %s"), *Context->GetMessageType().ToString(), *Context->GetSender().ToString());
+	UE_LOG(LogSGMessaging, Verbose, TEXT("Received %s message from %s"), *Context->GetMessageTag().ToString(),
+	       *Context->GetSender().ToString());
 
 	if (!Enabled)
 	{
@@ -167,7 +169,8 @@ FSGMessageAddress FSGMessageBridge::GetSenderAddress()
 }
 
 
-void FSGMessageBridge::NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FString& Error)
+void FSGMessageBridge::NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+                                          const FString& Error)
 {
 	// deprecated
 }
@@ -200,15 +203,16 @@ void FSGMessageBridge::ForgetTransportNode(const FGuid& NodeId)
 }
 
 
-void FSGMessageBridge::ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FGuid& NodeId)
+void FSGMessageBridge::ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+                                               const FGuid& NodeId)
 {
 	if (UE_GET_LOG_VERBOSITY(LogSGMessaging) >= ELogVerbosity::Verbose)
 	{
-		FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
+		const FString RecipientStr = FString::JoinBy(Context->GetRecipients(), TEXT("+"), &FSGMessageAddress::ToString);
 		UE_LOG(LogSGMessaging, Verbose, TEXT("FSGMessageBridge::ReceiveTransportMessage: Received %s from %s for %s"),
-			*Context->GetMessageType().ToString(),
-			*Context->GetSender().ToString(),
-			*RecipientStr);
+		       *Context->GetMessageTag().ToString(),
+		       *Context->GetSender().ToString(),
+		       *RecipientStr);
 	}
 
 	if (!Enabled || !Bus.IsValid())
@@ -226,7 +230,8 @@ void FSGMessageBridge::ReceiveTransportMessage(const TSharedRef<ISGMessageContex
 	// register newly discovered endpoints
 	if (!AddressBook.Contains(Context->GetSender()))
 	{
-		UE_LOG(LogSGMessaging, Verbose, TEXT("FSGMessageBridge::ReceiveTransportMessage: Registering new sender %s"), *Context->GetMessageType().ToString());
+		UE_LOG(LogSGMessaging, Verbose, TEXT("FSGMessageBridge::ReceiveTransportMessage: Registering new sender %s"),
+		       *Context->GetMessageTag().ToString());
 
 		AddressBook.Add(Context->GetSender(), NodeId);
 		Bus->Register(Context->GetSender(), AsShared());

@@ -8,31 +8,33 @@
  *****************************************************************************/
 
 FSGMessageDispatchTask::FSGMessageDispatchTask(
-	ENamedThreads::Type InThread,
-	TSharedRef<ISGMessageContext, ESPMode::ThreadSafe> InContext,
-	TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> InRecipient,
-	TSharedPtr<FSGMessageTracer, ESPMode::ThreadSafe> InTracer
+	const ENamedThreads::Type InThread,
+	const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe> InContext,
+	const TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe> InRecipient,
+	const TSharedPtr<FSGMessageTracer, ESPMode::ThreadSafe> InTracer
 )
 	: Context(InContext)
-	, RecipientPtr(InRecipient)
-	, Thread(InThread)
-	, TracerPtr(InTracer)
-{ }
+	  , RecipientPtr(InRecipient)
+	  , Thread(InThread)
+	  , TracerPtr(InTracer)
+{
+}
 
 
 /* FSGMessageDispatchTask interface
  *****************************************************************************/
 
-void FSGMessageDispatchTask::DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+void FSGMessageDispatchTask::DoTask(ENamedThreads::Type CurrentThread,
+                                    const FGraphEventRef& MyCompletionGraphEvent) const
 {
-	TSharedPtr<ISGMessageReceiver, ESPMode::ThreadSafe> Recipient = RecipientPtr.Pin();
+	const TSharedPtr<ISGMessageReceiver, ESPMode::ThreadSafe> Recipient = RecipientPtr.Pin();
 
 	if (!Recipient.IsValid())
 	{
 		return;
 	}
 
-	auto Tracer = TracerPtr.Pin();
+	const auto Tracer = TracerPtr.Pin();
 
 	if (Tracer.IsValid())
 	{
@@ -55,9 +57,10 @@ TStatId FSGMessageDispatchTask::GetStatId() const
 /* FSGBusNotificationDispatchTask interface
  *****************************************************************************/
 
-void FSGBusNotificationDispatchTask::DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+void FSGBusNotificationDispatchTask::DoTask(ENamedThreads::Type CurrentThread,
+                                            const FGraphEventRef& MyCompletionGraphEvent) const
 {
-	TSharedPtr<ISGBusListener, ESPMode::ThreadSafe> Listener = ListenerPtr.Pin();
+	const TSharedPtr<ISGBusListener, ESPMode::ThreadSafe> Listener = ListenerPtr.Pin();
 
 	if (!Listener.IsValid())
 	{

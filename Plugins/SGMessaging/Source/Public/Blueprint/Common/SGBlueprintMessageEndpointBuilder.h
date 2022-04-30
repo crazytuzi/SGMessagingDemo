@@ -16,26 +16,9 @@ struct FSGBlueprintMessageEndpointBuilder
 {
 public:
 	/**
-	 * Creates and initializes a new builder using the default message bus.
-	 *
-	 * WARNING: This constructor must be called from the Game thread.
-	 *
-	 * @param InName The endpoint's name (for debugging purposes).
-	 * @param InBus The message bus to attach the endpoint to.
-	 */
-	FSGBlueprintMessageEndpointBuilder(const FName& InName)
-		: Outer(nullptr)
-		  , BusPtr(nullptr)
-		  , Disabled(false)
-		  , InboxEnabled(false)
-		  , Name(InName)
-		  , RecipientThread(FTaskGraphInterface::Get().GetCurrentThreadIfKnown())
-	{
-	}
-
-	/**
 	 * Creates and initializes a new builder using the specified message bus.
 	 *
+	 * @param InOuter
 	 * @param InName The endpoint's name (for debugging purposes).
 	 * @param InBus The message bus to attach the endpoint to.
 	 */
@@ -91,7 +74,7 @@ public:
 	 * @return This instance (for method chaining).
 	 * @see ReceivingOnAnyThread
 	 */
-	FSGBlueprintMessageEndpointBuilder& ReceivingOnThread(ENamedThreads::Type NamedThread)
+	FSGBlueprintMessageEndpointBuilder& ReceivingOnThread(const ENamedThreads::Type NamedThread)
 	{
 		RecipientThread = NamedThread;
 
@@ -134,17 +117,11 @@ public:
 	{
 		const auto ScriptMessageEndpoint = NewObject<USGBlueprintMessageEndpoint>(Outer);
 
-		// TSharedPtr<FSGMessageEndpoint, ESPMode::ThreadSafe> Endpoint = MakeShared<FSGMessageEndpoint, ESPMode::ThreadSafe>();
-
 		ScriptMessageEndpoint->MessageEndpoint = nullptr;
 
-		TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = BusPtr.Pin();
-
-		if (Bus.IsValid())
+		if (const TSharedPtr<ISGMessageBus, ESPMode::ThreadSafe> Bus = BusPtr.Pin())
 		{
-			// TSharedPtr<FSGMessageEndpoint, ESPMode::ThreadSafe> Endpoint;
-
-			TSharedPtr<FSGMessageEndpoint, ESPMode::ThreadSafe> Endpoint = MakeShared<
+			const TSharedPtr<FSGMessageEndpoint, ESPMode::ThreadSafe> Endpoint = MakeShared<
 				FSGMessageEndpoint, ESPMode::ThreadSafe>(Name, Bus.ToSharedRef(), OnNotification);
 
 			ScriptMessageEndpoint->MessageEndpoint = Endpoint;

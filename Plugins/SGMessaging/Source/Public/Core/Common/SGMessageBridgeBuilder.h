@@ -16,29 +16,16 @@
 class FSGMessageBridgeBuilder
 {
 public:
-
 	/** Default constructor. */
 	FSGMessageBridgeBuilder()
 		: Address(FSGMessageAddress::NewAddress())
-		, BusPtr(nullptr)
-		, Disabled(false)
-		, Transport(nullptr)
-	{ }
-
-	/**
-	 * Creates and initializes a new instance.
-	 *
-	 * @param InBus The message bus to attach the bridge to.
-	 */
-	FSGMessageBridgeBuilder(const TSharedRef<ISGMessageBus, ESPMode::ThreadSafe>& Bus)
-		: Address(FSGMessageAddress::NewAddress())
-		, BusPtr(Bus)
-		, Disabled(false)
-		, Transport(nullptr)
-	{ }
+		  , BusPtr(nullptr)
+		  , Disabled(false)
+		  , Transport(nullptr)
+	{
+	}
 
 public:
-
 	/**
 	 * Disables the bridge.
 	 *
@@ -80,21 +67,18 @@ public:
 	}
 
 public:
-
 	/**
 	 * Builds the message bridge as configured.
 	 *
 	 * @return A new message bridge, or nullptr if it couldn't be built.
 	 */
-	TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe> Build()
+	TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe> Build() const
 	{
 		TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe> Bridge;
 
 		check(Transport.IsValid());
 
-		auto Bus = BusPtr.Pin();
-
-		if (Bus.IsValid())
+		if (const auto Bus = BusPtr.Pin())
 		{
 			Bridge = ISGMessagingModule::Get().CreateBridge(Address, Bus.ToSharedRef(), Transport.ToSharedRef());
 
@@ -119,13 +103,12 @@ public:
 	 *
 	 * @return A new message bridge, or nullptr if it couldn't be built.
 	 */
-	operator TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe>()
+	explicit operator TSharedPtr<ISGMessageBridge, ESPMode::ThreadSafe>() const
 	{
 		return Build();
 	}
 
 private:
-
 	/** Holds the bridge's address. */
 	FSGMessageAddress Address;
 

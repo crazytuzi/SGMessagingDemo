@@ -14,7 +14,7 @@
  * @param HandlerType The type of the handler class.
  */
 template <typename HandlerType>
-class TSGRawMessageCatchall
+class TSGRawMessageCatchall final
 	: public ISGMessageHandler
 {
 public:
@@ -28,7 +28,7 @@ public:
 	 * @param InHandler The object that will handle the messages.
 	 * @param InFunc The object's message handling function.
 	 */
-	TSGRawMessageCatchall(HandlerType* InHandler, FuncType InFunc)
+	TSGRawMessageCatchall(HandlerType* InHandler, const FuncType InFunc)
 		: Handler(InHandler)
 		  , Func(InFunc)
 		  , HashBuilder(FHashBuilder().Append(static_cast<void*>(InHandler)).Append(Pointer))
@@ -37,7 +37,7 @@ public:
 	}
 
 	/** Virtual destructor. */
-	~TSGRawMessageCatchall()
+	virtual ~TSGRawMessageCatchall() override
 	{
 	}
 
@@ -77,7 +77,7 @@ private:
  * @param HandlerType The type of the handler class.
  */
 template <typename MessageType, typename HandlerType>
-class TSGRawMessageHandler
+class TSGRawMessageHandler final
 	: public ISGMessageHandler
 {
 public:
@@ -92,7 +92,7 @@ public:
 	 * @param InHandler The object that will handle the messages.
 	 * @param InFunc The object's message handling function.
 	 */
-	TSGRawMessageHandler(HandlerType* InHandler, FuncType InFunc)
+	TSGRawMessageHandler(HandlerType* InHandler, const FuncType InFunc)
 		: Handler(InHandler)
 		  , Func(InFunc)
 		  , HashBuilder(FHashBuilder().Append(static_cast<void*>(InHandler)).Append(Pointer))
@@ -101,7 +101,7 @@ public:
 	}
 
 	/** Virtual destructor. */
-	~TSGRawMessageHandler()
+	virtual ~TSGRawMessageHandler() override
 	{
 	}
 
@@ -137,7 +137,7 @@ private:
 /**
  * Implements a catch-all handlers (via function objects).
  */
-class FSGFunctionMessageCatchall
+class FSGFunctionMessageCatchall final
 	: public ISGMessageHandler
 {
 public:
@@ -150,14 +150,14 @@ public:
 	 *
 	 * @param InFunc The object's message handling function.
 	 */
-	FSGFunctionMessageCatchall(FuncType InFunc)
+	explicit FSGFunctionMessageCatchall(FuncType InFunc)
 		: Func(MoveTemp(InFunc))
 		  , HashBuilder(FHashBuilder().Append(Pointer))
 	{
 	}
 
 	/** Virtual destructor. */
-	~FSGFunctionMessageCatchall()
+	virtual ~FSGFunctionMessageCatchall() override
 	{
 	}
 
@@ -193,7 +193,7 @@ private:
  * @param MessageType The type of message to handle.
  */
 template <typename MessageType>
-class TSGFunctionMessageHandler
+class TSGFunctionMessageHandler final
 	: public ISGMessageHandler
 {
 public:
@@ -204,16 +204,16 @@ public:
 	/**
 	 * Creates and initializes a new message handler.
 	 *
-	 * @param InHandlerFunc The object's message handling function.
+	 * @param InFunc The object's message handling function.
 	 */
-	TSGFunctionMessageHandler(FuncType InFunc)
+	explicit TSGFunctionMessageHandler(FuncType InFunc)
 		: Func(MoveTemp(InFunc))
 		  , HashBuilder(FHashBuilder().Append(Pointer))
 	{
 	}
 
 	/** Virtual destructor. */
-	~TSGFunctionMessageHandler()
+	virtual ~TSGFunctionMessageHandler() override
 	{
 	}
 
@@ -247,7 +247,7 @@ private:
  * Template for handlers of one specific message type (via delegate).
  */
 template <typename MessageType, typename ContextType>
-class TSGDelegateMessageHandler
+class TSGDelegateMessageHandler final
 	: public ISGMessageHandler
 {
 public:
@@ -265,7 +265,7 @@ public:
 	}
 
 	/** Virtual destructor. */
-	~TSGDelegateMessageHandler()
+	virtual ~TSGDelegateMessageHandler() override
 	{
 	}
 

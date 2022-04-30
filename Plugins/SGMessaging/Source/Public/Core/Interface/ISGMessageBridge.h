@@ -20,7 +20,6 @@
 class ISGMessageBridge
 {
 public:
-
 	/**
 	 * Disables this bridge.
 	 *
@@ -50,7 +49,8 @@ public:
 	virtual bool IsEnabled() const = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageBridge() { }
+	virtual ~ISGMessageBridge()
+	{
+	}
 };

@@ -14,28 +14,27 @@ class ISGMessageReceiver;
  * dispatch published messages to. Message subscriptions are created per message
  * type.
  */
-class FSGMessageSubscription
+class FSGMessageSubscription final
 	: public ISGMessageSubscription
 {
 public:
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
 	 * @param InSubscriber The message subscriber.
-	 * @param InMessageType The type of messages to subscribe to.
-	 * @param InReceivingThread The thread on which to receive messages on.
+	 * @param InMessageTag The type of messages to subscribe to.
 	 * @param InScopeRange The message scope range to subscribe to.
 	 */
-	FSGMessageSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& InSubscriber, const FName& InMessageType, const FSGMessageScopeRange& InScopeRange)
+	FSGMessageSubscription(const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& InSubscriber,
+	                       const FName& InMessageTag, const FSGMessageScopeRange& InScopeRange)
 		: Enabled(true)
-		, MessageType(InMessageType)
-		, ScopeRange(InScopeRange)
-		, Subscriber(InSubscriber)
-	{ }
+		  , MessageTag(InMessageTag)
+		  , ScopeRange(InScopeRange)
+		  , Subscriber(InSubscriber)
+	{
+	}
 
 public:
-
 	//~ ISGMessageSubscription interface
 
 	virtual void Disable() override
@@ -48,9 +47,9 @@ public:
 		Enabled = true;
 	}
 
-	virtual FName GetMessageType() override
+	virtual FName GetMessageTag() override
 	{
-		return MessageType;
+		return MessageTag;
 	}
 
 	virtual const FSGMessageScopeRange& GetScopeRange() override
@@ -69,12 +68,11 @@ public:
 	}
 
 private:
-
 	/** Holds a flag indicating whether this subscription is enabled. */
 	bool Enabled;
 
 	/** Holds the type of subscribed messages. */
-	FName MessageType;
+	FName MessageTag;
 
 	/** Holds the range of message scopes to subscribe to. */
 	FSGMessageScopeRange ScopeRange;

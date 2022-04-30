@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class SGMESSAGING_API USGMessageWorldSubsystem : public UWorldSubsystem
+class SGMESSAGING_API USGMessageWorldSubsystem final : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

@@ -25,7 +25,6 @@ struct FGuid;
 class ISGMessageReceiver
 {
 public:
-
 	/**
 	 * Gets the recipient's name (for debugging purposes).
 	 *
@@ -71,7 +70,6 @@ public:
 	virtual void ReceiveMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) = 0;
 
 public:
-
 	/**
 	 * Checks whether this recipient represents a remote endpoint.
 	 *
@@ -87,7 +85,8 @@ public:
 	}
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageReceiver() { }
+	virtual ~ISGMessageReceiver()
+	{
+	}
 };

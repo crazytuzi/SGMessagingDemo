@@ -8,7 +8,6 @@
 class FName;
 class FString;
 class ISGMessageAttachment;
-class UScriptStruct;
 
 enum class ESGMessageScope : uint8;
 
@@ -23,7 +22,6 @@ class ISGMutableMessageContext
 	: public ISGMessageContext
 {
 public:
-
 	/**
 	 * Adds a message address to the recipient list.
 	 *
@@ -37,14 +35,6 @@ public:
 	 * @param InAttachment The attachment to set.
 	 */
 	virtual void SetAttachment(const TSharedPtr<ISGMessageAttachment, ESPMode::ThreadSafe>& InAttachment) = 0;
-
-	/**
-	 * Sets the message.
-	 *
-	 * @param InMessage The message to set.
-	 * @param InTypeInfo The message's type information.
-	 */
-	virtual void SetMessage(void* InMessage, UScriptStruct* InTypeInfo) = 0;
 
 	/**
 	 * Sets the date and time at which the message expires.
@@ -83,7 +73,8 @@ public:
 	virtual void SetTimeSent(const FDateTime& InTimeSent) = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMutableMessageContext() { }
+	virtual ~ISGMutableMessageContext() override
+	{
+	}
 };

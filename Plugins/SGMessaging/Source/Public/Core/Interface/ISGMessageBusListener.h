@@ -24,7 +24,9 @@ enum class ESGMessageBusNotification : uint8
 class ISGBusListener
 {
 public:
-	virtual ~ISGBusListener() {}
+	virtual ~ISGBusListener()
+	{
+	}
 
 	/**
 	 * Gets the name of the thread on which to receive notifications.

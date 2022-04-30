@@ -12,11 +12,12 @@
 
 FSGMessageTracer::FSGMessageTracer()
 	: Breaking(false)
-	, ResetPending(false)
-	, Running(false)
+	  , ResetPending(false)
+	  , Running(false)
 {
 	ContinueEvent = FPlatformProcess::GetSynchEventFromPool();
-	TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSGMessageTracer::Tick), 0.0f);
+	TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FSGMessageTracer::Tick),
+	                                                          0.0f);
 }
 
 
@@ -31,11 +32,13 @@ FSGMessageTracer::~FSGMessageTracer()
 /* FSGMessageTracer interface
  *****************************************************************************/
 
-void FSGMessageTracer::TraceAddedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+void FSGMessageTracer::TraceAddedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor,
+                                             const FName& MessageTag)
 {
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// create interceptor information
 		auto& InterceptorInfo = Interceptors.FindOrAdd(Interceptor->GetInterceptorId());
 
@@ -52,13 +55,16 @@ void FSGMessageTracer::TraceAddedInterceptor(const TSharedRef<ISGMessageIntercep
 }
 
 
-void FSGMessageTracer::TraceAddedRecipient(const FSGMessageAddress& Address, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
+void FSGMessageTracer::TraceAddedRecipient(const FSGMessageAddress& Address,
+                                           const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
 {
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// create endpoint information
-		TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = RecipientsToEndpointInfos.FindOrAdd(Recipient->GetRecipientId());
+		TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = RecipientsToEndpointInfos.FindOrAdd(
+			Recipient->GetRecipientId());
 
 		if (!EndpointInfo.IsValid())
 		{
@@ -66,7 +72,7 @@ void FSGMessageTracer::TraceAddedRecipient(const FSGMessageAddress& Address, con
 		}
 
 		// initialize endpoint information
-		TSharedRef<FSGMessageTracerAddressInfo> AddressInfo = MakeShareable(new FSGMessageTracerAddressInfo());
+		const TSharedRef<FSGMessageTracerAddressInfo> AddressInfo = MakeShareable(new FSGMessageTracerAddressInfo());
 		{
 			AddressInfo->Address = Address;
 			AddressInfo->TimeRegistered = Timestamp;
@@ -83,7 +89,8 @@ void FSGMessageTracer::TraceAddedRecipient(const FSGMessageAddress& Address, con
 }
 
 
-void FSGMessageTracer::TraceAddedSubscription(const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription)
+void FSGMessageTracer::TraceAddedSubscription(
+	const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription)
 {
 	if (!Running)
 	{
@@ -92,31 +99,36 @@ void FSGMessageTracer::TraceAddedSubscription(const TSharedRef<ISGMessageSubscri
 
 	double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// @todo gmp: trace added subscriptions
 	});
 }
 
 
-void FSGMessageTracer::TraceDispatchedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient, bool Async)
+void FSGMessageTracer::TraceDispatchedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+                                              const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient,
+                                              bool Async)
 {
 	if (!Running)
 	{
 		return;
 	}
 
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// look up message & endpoint info
-		TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
+		const TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
 
 		if (!MessageInfo.IsValid())
 		{
 			return;
 		}
 
-		TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = RecipientsToEndpointInfos.FindOrAdd(Recipient->GetRecipientId());
+		const TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = RecipientsToEndpointInfos.FindOrAdd(
+			Recipient->GetRecipientId());
 
 		if (!EndpointInfo.IsValid())
 		{
@@ -124,10 +136,13 @@ void FSGMessageTracer::TraceDispatchedMessage(const TSharedRef<ISGMessageContext
 		}
 
 		// update message information
-		TSharedRef<FSGMessageTracerDispatchState> DispatchState = MakeShareable(new FSGMessageTracerDispatchState());
+		const TSharedRef<FSGMessageTracerDispatchState> DispatchState = MakeShareable(
+			new FSGMessageTracerDispatchState());
 		{
 			DispatchState->DispatchLatency = Timestamp - MessageInfo->TimeSent;
-			DispatchState->DispatchType = Async ? ESGMessageTracerDispatchTypes::TaskGraph : ESGMessageTracerDispatchTypes::Direct;
+			DispatchState->DispatchType = Async
+				                              ? ESGMessageTracerDispatchTypes::TaskGraph
+				                              : ESGMessageTracerDispatchTypes::Direct;
 			DispatchState->EndpointInfo = EndpointInfo;
 			DispatchState->RecipientThread = Recipient->GetRecipientThread();
 			DispatchState->TimeDispatched = Timestamp;
@@ -142,25 +157,28 @@ void FSGMessageTracer::TraceDispatchedMessage(const TSharedRef<ISGMessageContext
 }
 
 
-void FSGMessageTracer::TraceHandledMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
+void FSGMessageTracer::TraceHandledMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+                                           const TSharedRef<ISGMessageReceiver, ESPMode::ThreadSafe>& Recipient)
 {
 	if (!Running)
 	{
 		return;
 	}
 
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// look up message & endpoint info
-		TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
+		const TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
 
 		if (!MessageInfo.IsValid())
 		{
 			return;
 		}
 
-		TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = RecipientsToEndpointInfos.FindRef(Recipient->GetRecipientId());
+		const TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = RecipientsToEndpointInfos.FindRef(
+			Recipient->GetRecipientId());
 
 		if (!EndpointInfo.IsValid())
 		{
@@ -168,7 +186,8 @@ void FSGMessageTracer::TraceHandledMessage(const TSharedRef<ISGMessageContext, E
 		}
 
 		// update message information
-		TSharedPtr<FSGMessageTracerDispatchState> DispatchState = MessageInfo->DispatchStates.FindRef(EndpointInfo);
+		const TSharedPtr<FSGMessageTracerDispatchState> DispatchState = MessageInfo->DispatchStates.FindRef(
+			EndpointInfo);
 
 		if (DispatchState.IsValid())
 		{
@@ -178,7 +197,9 @@ void FSGMessageTracer::TraceHandledMessage(const TSharedRef<ISGMessageContext, E
 }
 
 
-void FSGMessageTracer::TraceInterceptedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor)
+void FSGMessageTracer::TraceInterceptedMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+                                               const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>&
+                                               Interceptor)
 {
 	if (!Running)
 	{
@@ -187,9 +208,10 @@ void FSGMessageTracer::TraceInterceptedMessage(const TSharedRef<ISGMessageContex
 
 	double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// look up message & interceptor info
-		auto MessageInfo = MessageInfos.FindRef(Context);
+		const auto MessageInfo = MessageInfos.FindRef(Context);
 
 		if (!MessageInfo.IsValid())
 		{
@@ -198,7 +220,7 @@ void FSGMessageTracer::TraceInterceptedMessage(const TSharedRef<ISGMessageContex
 
 		MessageInfo->Intercepted = true;
 
-		auto InterceptorInfo = Interceptors.FindRef(Interceptor->GetInterceptorId());
+		const auto InterceptorInfo = Interceptors.FindRef(Interceptor->GetInterceptorId());
 
 		if (!InterceptorInfo.IsValid())
 		{
@@ -207,16 +229,18 @@ void FSGMessageTracer::TraceInterceptedMessage(const TSharedRef<ISGMessageContex
 
 		// update interceptor information
 		InterceptorInfo->InterceptedMessages.Add(MessageInfo);
-	});		
+	});
 }
 
 
-void FSGMessageTracer::TraceRemovedInterceptor(const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageType)
+void FSGMessageTracer::TraceRemovedInterceptor(
+	const TSharedRef<ISGMessageInterceptor, ESPMode::ThreadSafe>& Interceptor, const FName& MessageTag)
 {
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
-		auto InterceptorInfo = Interceptors.FindRef(Interceptor->GetInterceptorId());
+	Traces.Enqueue([=]()
+	{
+		const auto InterceptorInfo = Interceptors.FindRef(Interceptor->GetInterceptorId());
 
 		if (!InterceptorInfo.IsValid())
 		{
@@ -231,10 +255,11 @@ void FSGMessageTracer::TraceRemovedInterceptor(const TSharedRef<ISGMessageInterc
 
 void FSGMessageTracer::TraceRemovedRecipient(const FSGMessageAddress& Address)
 {
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
-		TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = AddressesToEndpointInfos.FindRef(Address);
+	Traces.Enqueue([=]()
+	{
+		const TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = AddressesToEndpointInfos.FindRef(Address);
 
 		if (!EndpointInfo.IsValid())
 		{
@@ -242,7 +267,7 @@ void FSGMessageTracer::TraceRemovedRecipient(const FSGMessageAddress& Address)
 		}
 
 		// update endpoint information
-		TSharedPtr<FSGMessageTracerAddressInfo> AddressInfo = EndpointInfo->AddressInfos.FindRef(Address);
+		const TSharedPtr<FSGMessageTracerAddressInfo> AddressInfo = EndpointInfo->AddressInfos.FindRef(Address);
 
 		if (AddressInfo.IsValid())
 		{
@@ -252,7 +277,8 @@ void FSGMessageTracer::TraceRemovedRecipient(const FSGMessageAddress& Address)
 }
 
 
-void FSGMessageTracer::TraceRemovedSubscription(const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription, const FName& MessageType)
+void FSGMessageTracer::TraceRemovedSubscription(
+	const TSharedRef<ISGMessageSubscription, ESPMode::ThreadSafe>& Subscription, const FName& MessageTag)
 {
 	if (!Running)
 	{
@@ -261,7 +287,8 @@ void FSGMessageTracer::TraceRemovedSubscription(const TSharedRef<ISGMessageSubsc
 
 	double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// @todo gmp: trace removed message subscriptions
 	});
 }
@@ -280,11 +307,12 @@ void FSGMessageTracer::TraceRoutedMessage(const TSharedRef<ISGMessageContext, ES
 		ContinueEvent->Wait();
 	}
 
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// update message information
-		TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
+		const TSharedPtr<FSGMessageTracerMessageInfo> MessageInfo = MessageInfos.FindRef(Context);
 
 		if (MessageInfo.IsValid())
 		{
@@ -301,11 +329,13 @@ void FSGMessageTracer::TraceSentMessage(const TSharedRef<ISGMessageContext, ESPM
 		return;
 	}
 
-	double Timestamp = FPlatformTime::Seconds();
+	const double Timestamp = FPlatformTime::Seconds();
 
-	Traces.Enqueue([=]() {
+	Traces.Enqueue([=]()
+	{
 		// look up endpoint info
-		TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = AddressesToEndpointInfos.FindRef(Context->GetSender());
+		const TSharedPtr<FSGMessageTracerEndpointInfo> EndpointInfo = AddressesToEndpointInfos.FindRef(
+			Context->GetSender());
 
 		if (!EndpointInfo.IsValid())
 		{
@@ -313,7 +343,7 @@ void FSGMessageTracer::TraceSentMessage(const TSharedRef<ISGMessageContext, ESPM
 		}
 
 		// create message info
-		TSharedRef<FSGMessageTracerMessageInfo> MessageInfo = MakeShareable(new FSGMessageTracerMessageInfo());
+		const TSharedRef<FSGMessageTracerMessageInfo> MessageInfo = MakeShareable(new FSGMessageTracerMessageInfo());
 		{
 			MessageInfo->Context = Context;
 			MessageInfo->Intercepted = false;
@@ -324,12 +354,12 @@ void FSGMessageTracer::TraceSentMessage(const TSharedRef<ISGMessageContext, ESPM
 		}
 
 		// add message type
-		TSharedPtr<FSGMessageTracerTypeInfo>& TypeInfo = MessageTypes.FindOrAdd(Context->GetMessageType());
+		TSharedPtr<FSGMessageTracerTypeInfo>& TypeInfo = MessageTags.FindOrAdd(Context->GetMessageTag());
 
 		if (!TypeInfo.IsValid())
 		{
 			TypeInfo = MakeShareable(new FSGMessageTracerTypeInfo());
-			TypeInfo->TypeName = Context->GetMessageType();
+			TypeInfo->TypeName = Context->GetMessageTag();
 
 			TypeAddedDelegate.Broadcast(TypeInfo.ToSharedRef());
 		}
@@ -384,9 +414,9 @@ int32 FSGMessageTracer::GetMessages(TArray<TSharedPtr<FSGMessageTracerMessageInf
 }
 
 
-int32 FSGMessageTracer::GetMessageTypes(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const
+int32 FSGMessageTracer::GetMessageTags(TArray<TSharedPtr<FSGMessageTracerTypeInfo>>& OutTypes) const
 {
-	MessageTypes.GenerateValueArray(OutTypes);
+	MessageTags.GenerateValueArray(OutTypes);
 
 	return OutTypes.Num();
 }
@@ -446,7 +476,7 @@ void FSGMessageTracer::Stop()
 
 bool FSGMessageTracer::Tick(float DeltaTime)
 {
-    QUICK_SCOPE_CYCLE_COUNTER(STAT_FSGMessageTracer_Tick);
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FSGMessageTracer_Tick);
 
 	if (ResetPending)
 	{
@@ -475,12 +505,12 @@ bool FSGMessageTracer::Tick(float DeltaTime)
 void FSGMessageTracer::ResetMessages()
 {
 	MessageInfos.Reset();
-	MessageTypes.Reset();
+	MessageTags.Reset();
 
 	for (auto& EndpointInfoPair : AddressesToEndpointInfos)
 	{
-		TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = EndpointInfoPair.Value;
 		{
+			const TSharedPtr<FSGMessageTracerEndpointInfo>& EndpointInfo = EndpointInfoPair.Value;
 			EndpointInfo->ReceivedMessages.Reset();
 			EndpointInfo->SentMessages.Reset();
 		}

@@ -30,15 +30,14 @@ class ISGMessageTransport;
  *
  * @see ISGMessageBus, ISGMessageTransport
  */
-class FSGMessageBridge
+class FSGMessageBridge final
 	: public TSharedFromThis<FSGMessageBridge, ESPMode::ThreadSafe>
-	, public ISGMessageBridge
-	, public ISGMessageReceiver
-	, public ISGMessageSender
-	, protected ISGMessageTransportHandler
+	  , public ISGMessageBridge
+	  , public ISGMessageReceiver
+	  , public ISGMessageSender
+	  , protected ISGMessageTransportHandler
 {
 public:
-
 	/**
 	 * Creates and initializes a new instance.
 	 *
@@ -53,10 +52,9 @@ public:
 	);
 
 	/** Virtual destructor. */
-	virtual ~FSGMessageBridge();
+	virtual ~FSGMessageBridge() override;
 
 public:
-
 	//~ ISGMessageBridge interface
 
 	virtual void Disable() override;
@@ -64,7 +62,6 @@ public:
 	virtual bool IsEnabled() const override;
 
 public:
-
 	//~ ISGMessageReceiver interface
 
 	virtual FName GetDebugName() const override;
@@ -74,27 +71,25 @@ public:
 	virtual void ReceiveMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context) override;
 
 public:
-
 	//~ ISGMessageSender interface
 
 	virtual FSGMessageAddress GetSenderAddress() override;
-	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FString& Error) override;
+	virtual void NotifyMessageError(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                                const FString& Error) override;
 
 protected:
-
 	//~ ISGMessageTransportHandler interface
 
 	virtual void DiscoverTransportNode(const FGuid& NodeId) override;
 	virtual void ForgetTransportNode(const FGuid& NodeId) override;
-	virtual void ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context, const FGuid& NodeId) override;
+	virtual void ReceiveTransportMessage(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& Context,
+	                                     const FGuid& NodeId) override;
 
 private:
-
 	/** Callback for message bus shutdowns. */
 	void HandleMessageBusShutdown();
 
 private:
-
 	/** Holds the bridge's address. */
 	FSGMessageAddress Address;
 

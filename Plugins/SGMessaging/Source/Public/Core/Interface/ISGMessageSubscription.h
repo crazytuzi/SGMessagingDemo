@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Math/Range.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/NameTypes.h"
 
@@ -23,7 +22,6 @@ enum class ESGMessageScope : uint8;
 class ISGMessageSubscription
 {
 public:
-
 	/**
 	 * Disables the subscription.
 	 *
@@ -39,18 +37,18 @@ public:
 	virtual void Enable() = 0;
 
 	/**
-	 * Gets the type of subscribed messages.
+	 * Gets the tag of subscribed messages.
 	 *
 	 * @return Message type.
 	 * @see GetScopeRange, GetSubscriber
 	 */
-	virtual FName GetMessageType() = 0;
+	virtual FName GetMessageTag() = 0;
 
 	/**
 	 * Gets the range of subscribed message scopes.
 	 *
 	 * @return Message scope range.
-	 * @see GetMessageType, GetSubscriber
+	 * @see GetMessageTag, GetSubscriber
 	 */
 	virtual const TRange<ESGMessageScope>& GetScopeRange() = 0;
 
@@ -58,7 +56,7 @@ public:
 	 * Gets the subscriber.
 	 *
 	 * @return The subscriber.
-	 * @see GetMessageType, GetScopeRange
+	 * @see GetMessageTag, GetScopeRange
 	 */
 	virtual const TWeakPtr<ISGMessageReceiver, ESPMode::ThreadSafe>& GetSubscriber() = 0;
 
@@ -71,7 +69,8 @@ public:
 	virtual bool IsEnabled() = 0;
 
 public:
-
 	/** Virtual destructor. */
-	virtual ~ISGMessageSubscription() { }
+	virtual ~ISGMessageSubscription()
+	{
+	}
 };

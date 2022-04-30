@@ -13,7 +13,6 @@
 class FSGMessageAddressBook
 {
 public:
-
 	/** Default constructor. */
 	FSGMessageAddressBook()
 	{
@@ -27,7 +26,6 @@ public:
 	}
 
 public:
-
 	/**
 	 * Adds an address to the address book.
 	 *
@@ -55,7 +53,7 @@ public:
 	 * @param Address The address to check.
 	 * @return true if the address is known, false otherwise.
 	 */
-	bool Contains(const FSGMessageAddress& Address)
+	bool Contains(const FSGMessageAddress& Address) const
 	{
 		FScopeLock Lock(CriticalSection);
 
@@ -76,9 +74,7 @@ public:
 
 		for (const auto& Address : Addresses)
 		{
-			FGuid* NodeId = Entries.Find(Address);
-
-			if (NodeId != nullptr)
+			if (const FGuid* NodeId = Entries.Find(Address))
 			{
 				FoundNodes.AddUnique(*NodeId);
 			}
@@ -93,7 +89,7 @@ public:
 	 * To remove only the addresses for a specific remote node, use RemoveNode().
 	 * If you are not interested in the removed addresses, use Clear() instead.
 	 *
-	 * @param OutRemovedRecipients Will hold a list of recipients that were removed.
+	 * @param OutRemovedAddresses Will hold a list of recipients that were removed.
 	 * @see Clear, RemoveNode
 	 */
 	void RemoveAll(TArray<FSGMessageAddress>& OutRemovedAddresses)
@@ -110,7 +106,7 @@ public:
 	 * Removes all known message addresses for the specified remote node identifier.
 	 *
 	 * @param NodeId The identifier of the remote node to remove.
-	 * @param OutRemovedRecipients Will hold a list of recipients that were removed.
+	 * @param OutRemovedAddresses Will hold a list of recipients that were removed.
 	 * @see Clear, RemoveAllNodes
 	 */
 	void RemoveNode(const FGuid& NodeId, TArray<FSGMessageAddress>& OutRemovedAddresses)
@@ -134,7 +130,6 @@ public:
 	}
 
 private:
-
 	/** Holds a critical section to serialize access to the address book entries. */
 	FCriticalSection* CriticalSection;
 

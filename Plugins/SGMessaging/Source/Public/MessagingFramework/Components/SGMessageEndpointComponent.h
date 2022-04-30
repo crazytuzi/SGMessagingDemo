@@ -10,7 +10,7 @@
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SGMESSAGING_API USGMessageEndpointComponent : public UActorComponent
+class SGMESSAGING_API USGMessageEndpointComponent final : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -29,11 +29,11 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Subscribe(const int32 InTopicID, const int32 InMessageID, const FSGBlueprintMessageDelegate& InDelegate);
+	void Subscribe(const int32 InTopicID, const int32 InMessageID, const FSGBlueprintMessageDelegate& InDelegate) const;
 
 	template <typename HandlerType>
 	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
-	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc) const
 	{
 		if (IsValid(MessageEndpoint))
 		{
@@ -43,10 +43,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Publish(const int32 InTopicID, const int32 InMessageID, const FSGBlueprintPublishParameter InParameter,
-	             const FSGBlueprintMessage InMessage);
+	             const FSGBlueprintMessage InMessage) const;
 
 	template <typename ...Args>
-	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER_SIGNATURE, Args&&... Params)
+	void Publish(MESSAGE_TAG_PARAM_SIGNATURE, CONST_PUBLISH_PARAMETER_SIGNATURE, Args&&... Params) const
 	{
 		if (IsValid(MessageEndpoint))
 		{
@@ -56,12 +56,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Send(const int32 InTopicID, const int32 InMessageID, const TArray<FSGBlueprintMessageAddress>& InRecipients,
-	          const FSGBlueprintSendParameter InParameter, const FSGBlueprintMessage InMessage);
+	          const FSGBlueprintSendParameter InParameter, const FSGBlueprintMessage InMessage) const;
 
 	template <typename ...Args>
-	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& InRecipients,
-	          CONST_SEND_PARAMETER_SIGNATURE,
-	          Args&&... Params)
+	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGMessageAddress>& InRecipients,CONST_SEND_PARAMETER_SIGNATURE,
+	          Args&&... Params) const
 	{
 		if (IsValid(MessageEndpoint))
 		{
@@ -71,7 +70,7 @@ public:
 
 	template <typename ...Args>
 	void Send(MESSAGE_TAG_PARAM_SIGNATURE, const FSGMessageAddress& InRecipient, CONST_SEND_PARAMETER_SIGNATURE,
-	          Args&&... Params)
+	          Args&&... Params) const
 	{
 		if (IsValid(MessageEndpoint))
 		{
@@ -81,7 +80,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Forward(const FSGBlueprintMessageContext& InContext, const TArray<FSGBlueprintMessageAddress>& InRecipients,
-	             const FTimespan InDelay);
+	             const FTimespan InDelay) const;
 
 	void Forward(const TSharedRef<ISGMessageContext, ESPMode::ThreadSafe>& InContext,
 	             const TArray<FSGMessageAddress>& InRecipients, const FTimespan InDelay = FTimespan()) const
@@ -98,7 +97,7 @@ public:
 
 	template <typename HandlerType>
 	void Unsubscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
-	                 typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	                 typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc) const
 	{
 		if (IsValid(MessageEndpoint))
 		{

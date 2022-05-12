@@ -33,18 +33,18 @@ void USGMessageEndpointComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	// ...
 }
 
-void USGMessageEndpointComponent::Subscribe(
-	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
+void USGMessageEndpointComponent::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate,
+                                            const ESGBlueprintMessageScope InScope)
 {
 	if (IsValid(MessageEndpoint))
 	{
-		MessageEndpoint->Subscribe(MESSAGE_TAG_PARAM_VALUE, InDelegate);
+		MessageEndpoint->Subscribe(MESSAGE_TAG_PARAM_VALUE, InDelegate, InScope);
 	}
 }
 
 void USGMessageEndpointComponent::Publish(
 	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
-	const FSGBlueprintMessage InMessage) const
+	const FSGBlueprintMessage InMessage)
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -54,7 +54,7 @@ void USGMessageEndpointComponent::Publish(
 
 void USGMessageEndpointComponent::Send(
 	MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGBlueprintMessageAddress>& InRecipients,
-	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage) const
+	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage)
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -64,7 +64,7 @@ void USGMessageEndpointComponent::Send(
 
 void USGMessageEndpointComponent::Forward(const FSGBlueprintMessageContext& InContext,
                                           const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                          const FTimespan InDelay) const
+                                          const FTimespan InDelay)
 {
 	if (IsValid(MessageEndpoint))
 	{
@@ -73,7 +73,7 @@ void USGMessageEndpointComponent::Forward(const FSGBlueprintMessageContext& InCo
 }
 
 void USGMessageEndpointComponent::Unsubscribe(
-	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate)
 {
 	if (IsValid(MessageEndpoint))
 	{

@@ -12,19 +12,20 @@ USGBlueprintMessageEndpoint::~USGBlueprintMessageEndpoint()
 	}
 }
 
-void USGBlueprintMessageEndpoint::Subscribe(
-	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
+void USGBlueprintMessageEndpoint::Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate,
+                                            const ESGBlueprintMessageScope InScope)
 {
 	if (MessageEndpoint.IsValid())
 	{
 		MessageEndpoint->Subscribe<FSGBlueprintMessage, FSGBlueprintMessageContext>(
-			MESSAGE_TAG_PARAM_VALUE, InDelegate.GetUObject(), InDelegate.GetFunctionName());
+			MESSAGE_TAG_PARAM_VALUE, InDelegate.GetUObject(), InDelegate.GetFunctionName(),
+			static_cast<ESGMessageScope>(InScope));
 	}
 }
 
 void USGBlueprintMessageEndpoint::Publish(
 	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintPublishParameter MESSAGE_PARAMETER,
-	const FSGBlueprintMessage InMessage) const
+	const FSGBlueprintMessage InMessage)
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -35,7 +36,7 @@ void USGBlueprintMessageEndpoint::Publish(
 
 void USGBlueprintMessageEndpoint::Send(
 	MESSAGE_TAG_PARAM_SIGNATURE, const TArray<FSGBlueprintMessageAddress>& InRecipients,
-	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage) const
+	const FSGBlueprintSendParameter MESSAGE_PARAMETER, const FSGBlueprintMessage InMessage)
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -55,7 +56,7 @@ void USGBlueprintMessageEndpoint::Send(
 
 void USGBlueprintMessageEndpoint::Forward(const FSGBlueprintMessageContext& InContext,
                                           const TArray<FSGBlueprintMessageAddress>& InRecipients,
-                                          const FTimespan InDelay) const
+                                          const FTimespan InDelay)
 {
 	if (MessageEndpoint.IsValid())
 	{
@@ -73,7 +74,7 @@ void USGBlueprintMessageEndpoint::Forward(const FSGBlueprintMessageContext& InCo
 }
 
 void USGBlueprintMessageEndpoint::Unsubscribe(
-	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate) const
+	MESSAGE_TAG_PARAM_SIGNATURE, const FSGBlueprintMessageDelegate& InDelegate)
 {
 	if (MessageEndpoint.IsValid())
 	{

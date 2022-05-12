@@ -562,21 +562,23 @@ public:
 
 	template <typename HandlerType>
 	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, HandlerType* Handler,
-	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc)
+	               typename TSGRawMessageHandler<FSGMessage, HandlerType>::FuncType HandlerFunc,
+	               const ESGMessageScope& InScope)
 	{
 		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
 
-		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(InScope));
 
 		WithRawMessageHandler(MessageTag, Handler, HandlerFunc);
 	}
 
 	template <typename MessageType, typename ContextType>
-	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const UObject* Object, const FName& FunctionName)
+	void Subscribe(MESSAGE_TAG_PARAM_SIGNATURE, const UObject* Object, const FName& FunctionName,
+	               const ESGMessageScope& InScope)
 	{
 		const auto MessageTag = FSGMessageTagBuilder::Builder(MESSAGE_TAG_PARAM_VALUE);
 
-		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(ESGMessageScope::Thread));
+		Subscribe(MessageTag, FSGMessageScopeRange::AtLeast(InScope));
 
 		WithDelegateMessageHandler<MessageType, ContextType>(MessageTag, Object, FunctionName);
 	}

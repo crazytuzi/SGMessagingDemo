@@ -185,7 +185,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
 - 全局MessageEndpoint
 
-    ![MessageEndpoint](./Images/MessageEndpoint.png)
+    ![MessageEndpoint](../Images/MessageEndpoint.png)
 
 - 消息参数
 
@@ -193,7 +193,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
         - 示例
 
-            ![SetParams](./Images/SetParams.png)
+            ![SetParams](../Images/SetParams.png)
 
         - 参数
 
@@ -205,7 +205,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
         - 示例
 
-            ![GetParams](./Images/GetParams.png)
+            ![GetParams](../Images/GetParams.png)
 
         - 参数
 
@@ -217,7 +217,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
     - 示例
 
-        ![Subscribe](./Images/Subscribe.png)
+        ![Subscribe](../Images/Subscribe.png)
 
     - 参数
 
@@ -240,7 +240,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
     - 示例
 
-        ![Publish](./Images/Publish.png)
+        ![Publish](../Images/Publish.png)
     
     - 参数
 
@@ -264,7 +264,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
     - 示例
 
-        ![Send](./Images/Send.png)
+        ![Send](../Images/Send.png)
 
     - 参数
 
@@ -292,7 +292,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
     - 示例
 
-        ![Forward](./Images/Forward.png)
+        ![Forward](../Images/Forward.png)
     
     - 参数
 
@@ -306,7 +306,7 @@ const auto MessageEndpoint = USGMessageFunctionLibrary::GetDefaultMessageEndpoin
 
     - 示例
 
-        ![Unsubscribe](./Images/Unsubscribe.png)
+        ![Unsubscribe](../Images/Unsubscribe.png)
 
     - 参数
 
